@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.imaging.mapper.PatientImageMapper">
+
+    <select id="selectPatientImages" resultType="com.company.dental.modules.imaging.vo.PatientImageVO">
+        SELECT pi.id,
+               pi.org_id,
+               pi.clinic_id,
+               c.clinic_name,
+               pi.patient_id,
+               p.patient_name,
+               pi.medical_record_id,
+               mr.record_no AS medical_record_no,
+               pi.file_id,
+               f.file_name,
+               f.file_url,
+               f.mime_type,
+               pi.image_type,
+               pi.image_group_type,
+               pi.shot_time,
+               pi.tooth_position,
+               pi.sort_no,
+               pi.remark,
+               pi.created_at
+        FROM patient_image pi
+        LEFT JOIN clinic c ON c.id = pi.clinic_id
+        LEFT JOIN patient p ON p.id = pi.patient_id
+        LEFT JOIN medical_record mr ON mr.id = pi.medical_record_id
+        LEFT JOIN file_attachment f ON f.id = pi.file_id
+        WHERE pi.org_id = #{orgId}
+        <if test="query.patientId != null">
+            AND pi.patient_id = #{query.patientId}
+        </if>
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND pi.clinic_id IN
+                    <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                        #{clinicId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="staffId != null">
+                    AND pi.patient_id IN (
+                        SELECT patient_id FROM patient_doctor_rel WHERE doctor_id = #{staffId} AND status = 1
+                        UNION
+                        SELECT patient_id FROM appointment WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM medical_record WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM treatment_plan WHERE doctor_id = #{staffId} AND is_deleted = 0
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="query.medicalRecordId != null">
+            AND pi.medical_record_id = #{query.medicalRecordId}
+        </if>
+        <if test="query.imageType != null and query.imageType != ''">
+            AND pi.image_type = #{query.imageType}
+        </if>
+        <if test="query.imageGroupType != null and query.imageGroupType != ''">
+            AND pi.image_group_type = #{query.imageGroupType}
+        </if>
+        ORDER BY pi.sort_no ASC, pi.shot_time DESC, pi.id DESC
+    </select>
+
+</mapper>

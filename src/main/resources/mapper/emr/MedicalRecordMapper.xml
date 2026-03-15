@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.emr.mapper.MedicalRecordMapper">
+
+    <select id="selectMedicalRecordPage" resultType="com.company.dental.modules.emr.vo.MedicalRecordPageItemVO">
+        SELECT mr.id,
+               mr.org_id,
+               mr.clinic_id,
+               c.clinic_name,
+               mr.record_no,
+               mr.patient_id,
+               p.patient_name,
+               mr.appointment_id,
+               a.appointment_no,
+               mr.doctor_id,
+               d.staff_name AS doctor_name,
+               mr.visit_type,
+               mr.visit_date,
+               mr.record_status,
+               mr.signed_flag,
+               mr.signed_at,
+               mr.chief_complaint,
+               mr.preliminary_diagnosis,
+               mr.remark
+        FROM medical_record mr
+        LEFT JOIN clinic c ON c.id = mr.clinic_id
+        LEFT JOIN patient p ON p.id = mr.patient_id
+        LEFT JOIN appointment a ON a.id = mr.appointment_id
+        LEFT JOIN staff d ON d.id = mr.doctor_id
+        WHERE mr.is_deleted = 0
+          AND mr.org_id = #{orgId}
+        <if test="accessScope == 'CLINIC' and clinicIds != null and clinicIds.size() > 0">
+            AND mr.clinic_id IN
+            <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                #{clinicId}
+            </foreach>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT' and staffId != null">
+            AND mr.doctor_id = #{staffId}
+        </if>
+        <if test="query.patientId != null">
+            AND mr.patient_id = #{query.patientId}
+        </if>
+        <if test="query.doctorId != null">
+            AND mr.doctor_id = #{query.doctorId}
+        </if>
+        <if test="query.clinicId != null">
+            AND mr.clinic_id = #{query.clinicId}
+        </if>
+        <if test="query.recordStatus != null and query.recordStatus != ''">
+            AND mr.record_status = #{query.recordStatus}
+        </if>
+        <if test="query.visitDateFrom != null">
+            AND mr.visit_date &gt;= #{query.visitDateFrom}
+        </if>
+        <if test="query.visitDateTo != null">
+            AND mr.visit_date &lt; DATE_ADD(#{query.visitDateTo}, INTERVAL 1 DAY)
+        </if>
+        <if test="query.keyword != null and query.keyword != ''">
+            AND (
+                mr.record_no LIKE CONCAT('%', #{query.keyword}, '%')
+                OR p.patient_name LIKE CONCAT('%', #{query.keyword}, '%')
+                OR p.mobile LIKE CONCAT('%', #{query.keyword}, '%')
+                OR d.staff_name LIKE CONCAT('%', #{query.keyword}, '%')
+            )
+        </if>
+        ORDER BY mr.visit_date DESC, mr.id DESC
+    </select>
+
+    <select id="selectMedicalRecordDetailById" resultType="com.company.dental.modules.emr.vo.MedicalRecordDetailVO">
+        SELECT mr.id,
+               mr.org_id,
+               mr.clinic_id,
+               c.clinic_name,
+               mr.record_no,
+               mr.patient_id,
+               p.patient_name,
+               p.mobile AS patient_mobile,
+               mr.appointment_id,
+               a.appointment_no,
+               mr.doctor_id,
+               d.staff_name AS doctor_name,
+               mr.assistant_id,
+               s.staff_name AS assistant_name,
+               mr.visit_type,
+               mr.visit_date,
+               mr.chief_complaint,
+               mr.present_illness,
+               mr.oral_examination,
+               mr.auxiliary_examination,
+               mr.preliminary_diagnosis,
+               mr.treatment_advice,
+               mr.doctor_advice,
+               mr.revisit_advice,
+               mr.next_visit_date,
+               mr.record_status,
+               mr.signed_flag,
+               mr.signed_at,
+               mr.print_count,
+               mr.remark
+        FROM medical_record mr
+        LEFT JOIN clinic c ON c.id = mr.clinic_id
+        LEFT JOIN patient p ON p.id = mr.patient_id
+        LEFT JOIN appointment a ON a.id = mr.appointment_id
+        LEFT JOIN staff d ON d.id = mr.doctor_id
+        LEFT JOIN staff s ON s.id = mr.assistant_id
+        WHERE mr.id = #{id}
+          AND mr.org_id = #{orgId}
+          AND mr.is_deleted = 0
+        <if test="accessScope == 'CLINIC' and clinicIds != null and clinicIds.size() > 0">
+            AND mr.clinic_id IN
+            <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                #{clinicId}
+            </foreach>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT' and staffId != null">
+            AND mr.doctor_id = #{staffId}
+        </if>
+        LIMIT 1
+    </select>
+
+    <select id="selectPatientVisitRecords" resultType="com.company.dental.modules.patient.vo.PatientVisitRecordVO">
+        SELECT mr.id,
+               mr.record_no,
+               mr.clinic_id,
+               c.clinic_name,
+               mr.appointment_id,
+               a.appointment_no,
+               mr.doctor_id,
+               d.staff_name AS doctor_name,
+               mr.visit_type,
+               mr.visit_date,
+               mr.record_status,
+               mr.signed_flag,
+               mr.chief_complaint,
+               mr.preliminary_diagnosis,
+               mr.remark
+        FROM medical_record mr
+        LEFT JOIN clinic c ON c.id = mr.clinic_id
+        LEFT JOIN appointment a ON a.id = mr.appointment_id
+        LEFT JOIN staff d ON d.id = mr.doctor_id
+        WHERE mr.patient_id = #{patientId}
+          AND mr.org_id = #{orgId}
+          AND mr.is_deleted = 0
+        ORDER BY mr.visit_date DESC, mr.id DESC
+    </select>
+
+</mapper>

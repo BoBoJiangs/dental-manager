@@ -47,7 +47,9 @@ public class JwtTokenProvider {
                 .claim("username", loginUser.getUsername())
                 .claim("accountType", loginUser.getAccountType())
                 .claim("clinicId", loginUser.getClinicId())
+                .claim("clinicIds", loginUser.getClinicIds())
                 .claim("roles", loginUser.getRoles())
+                .claim("dataScopes", loginUser.getDataScopes())
                 .signWith(secretKey)
                 .compact();
     }
@@ -60,6 +62,7 @@ public class JwtTokenProvider {
                     .parseSignedClaims(token)
                     .getPayload();
             Object clinicIdValue = claims.get("clinicId");
+            Object clinicIdsValue = claims.get("clinicIds");
             return LoginUser.builder()
                     .userId(Long.valueOf(claims.getSubject()))
                     .orgId(claims.get("orgId", Long.class))
@@ -67,7 +70,11 @@ public class JwtTokenProvider {
                     .username(claims.get("username", String.class))
                     .accountType(claims.get("accountType", String.class))
                     .clinicId(clinicIdValue == null ? null : Long.valueOf(String.valueOf(clinicIdValue)))
+                    .clinicIds(clinicIdsValue instanceof List<?> ids
+                            ? ids.stream().map(item -> Long.valueOf(String.valueOf(item))).toList()
+                            : null)
                     .roles(claims.get("roles", List.class))
+                    .dataScopes(claims.get("dataScopes", List.class))
                     .build();
         } catch (Exception ex) {
             throw new BusinessException(ErrorCode.TOKEN_INVALID);

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.member.mapper.MemberAccountMapper">
+
+    <select id="selectMemberAccountPage" resultType="com.company.dental.modules.member.vo.MemberAccountPageItemVO">
+        SELECT ma.id,
+               ma.patient_id,
+               p.patient_name,
+               p.mobile AS patient_mobile,
+               ma.member_no,
+               ma.level_id,
+               ml.level_name,
+               ma.balance_amount,
+               ma.points_balance,
+               ma.total_recharge_amount,
+               ma.total_consume_amount,
+               ma.member_status,
+               ma.activated_at,
+               ma.expired_at
+        FROM member_account ma
+        LEFT JOIN patient p ON p.id = ma.patient_id
+        LEFT JOIN member_level ml ON ml.id = ma.level_id
+        WHERE ma.org_id = #{orgId}
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND (
+                        p.first_clinic_id IN
+                        <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                            #{clinicId}
+                        </foreach>
+                        OR ma.patient_id IN (
+                            SELECT patient_id FROM appointment
+                            WHERE clinic_id IN
+                            <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                                #{clinicId}
+                            </foreach>
+                            AND is_deleted = 0
+                        )
+                        OR ma.patient_id IN (
+                            SELECT patient_id FROM medical_record
+                            WHERE clinic_id IN
+                            <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                                #{clinicId}
+                            </foreach>
+                            AND is_deleted = 0
+                        )
+                        OR ma.patient_id IN (
+                            SELECT patient_id FROM patient_doctor_rel
+                            WHERE clinic_id IN
+                            <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                                #{clinicId}
+                            </foreach>
+                            AND status = 1
+                        )
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="staffId != null">
+                    AND ma.patient_id IN (
+                        SELECT patient_id FROM patient_doctor_rel WHERE doctor_id = #{staffId} AND status = 1
+                        UNION
+                        SELECT patient_id FROM appointment WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM medical_record WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM treatment_plan WHERE doctor_id = #{staffId} AND is_deleted = 0
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="query.patientId != null">
+            AND ma.patient_id = #{query.patientId}
+        </if>
+        <if test="query.levelId != null">
+            AND ma.level_id = #{query.levelId}
+        </if>
+        <if test="query.memberStatus != null and query.memberStatus != ''">
+            AND ma.member_status = #{query.memberStatus}
+        </if>
+        <if test="query.keyword != null and query.keyword != ''">
+            AND (
+                ma.member_no LIKE CONCAT('%', #{query.keyword}, '%')
+                OR p.patient_name LIKE CONCAT('%', #{query.keyword}, '%')
+                OR p.mobile LIKE CONCAT('%', #{query.keyword}, '%')
+            )
+        </if>
+        ORDER BY ma.created_at DESC, ma.id DESC
+    </select>
+
+    <select id="selectMemberAccountDetailById" resultType="com.company.dental.modules.member.vo.MemberAccountDetailVO">
+        SELECT ma.id,
+               ma.org_id,
+               ma.patient_id,
+               p.patient_name,
+               p.mobile AS patient_mobile,
+               ma.member_no,
+               ma.level_id,
+               ml.level_code,
+               ml.level_name,
+               ml.discount_rate AS discount_rate,
+               ml.points_rate AS points_rate,
+               ma.balance_amount,
+               ma.points_balance,
+               ma.total_recharge_amount,
+               ma.total_consume_amount,
+               ma.member_status,
+               ma.activated_at,
+               ma.expired_at
+        FROM member_account ma
+        LEFT JOIN patient p ON p.id = ma.patient_id
+        LEFT JOIN member_level ml ON ml.id = ma.level_id
+        WHERE ma.id = #{id}
+          AND ma.org_id = #{orgId}
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND (
+                        p.first_clinic_id IN
+                        <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                            #{clinicId}
+                        </foreach>
+                        OR ma.patient_id IN (
+                            SELECT patient_id FROM appointment
+                            WHERE clinic_id IN
+                            <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                                #{clinicId}
+                            </foreach>
+                            AND is_deleted = 0
+                        )
+                        OR ma.patient_id IN (
+                            SELECT patient_id FROM medical_record
+                            WHERE clinic_id IN
+                            <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                                #{clinicId}
+                            </foreach>
+                            AND is_deleted = 0
+                        )
+                        OR ma.patient_id IN (
+                            SELECT patient_id FROM patient_doctor_rel
+                            WHERE clinic_id IN
+                            <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                                #{clinicId}
+                            </foreach>
+                            AND status = 1
+                        )
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="staffId != null">
+                    AND ma.patient_id IN (
+                        SELECT patient_id FROM patient_doctor_rel WHERE doctor_id = #{staffId} AND status = 1
+                        UNION
+                        SELECT patient_id FROM appointment WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM medical_record WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM treatment_plan WHERE doctor_id = #{staffId} AND is_deleted = 0
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT 1
+    </select>
+
+</mapper>

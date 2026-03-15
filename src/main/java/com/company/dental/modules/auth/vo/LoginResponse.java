@@ -18,5 +18,7 @@ public class LoginResponse {
     private String username;
     private String accountType;
     private Long clinicId;
+    private List<Long> clinicIds;
     private List<String> roles;
+    private List<String> dataScopes;
 }

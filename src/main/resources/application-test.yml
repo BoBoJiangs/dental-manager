@@ -1,0 +1,42 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: ${DENTAL_DB_URL:jdbc:mysql://127.0.0.1:3306/dental_mgmt?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
+    username: ${DENTAL_DB_USERNAME:root}
+    password: ${DENTAL_DB_PASSWORD:root}
+  data:
+    redis:
+      host: ${DENTAL_REDIS_HOST:127.0.0.1}
+      port: ${DENTAL_REDIS_PORT:6379}
+      database: ${DENTAL_REDIS_DB:0}
+  rabbitmq:
+    host: ${DENTAL_RABBITMQ_HOST:127.0.0.1}
+    port: ${DENTAL_RABBITMQ_PORT:5672}
+    username: ${DENTAL_RABBITMQ_USERNAME:guest}
+    password: ${DENTAL_RABBITMQ_PASSWORD:guest}
+  flyway:
+    enabled: false
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+dental:
+  jwt:
+    issuer: ${DENTAL_JWT_ISSUER:dental-management-system-test}
+    secret: ${DENTAL_JWT_SECRET:ChangeMeToA32CharacterOrLongerSecretKey123456}
+  minio:
+    endpoint: ${DENTAL_MINIO_ENDPOINT:http://127.0.0.1:9000}
+    access-key: ${DENTAL_MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${DENTAL_MINIO_SECRET_KEY:minioadmin}
+    bucket-name: ${DENTAL_MINIO_BUCKET:dental-test}
+  messaging:
+    sms-enabled: false
+  sms:
+    aliyun:
+      enabled: false
+      mock-enabled: true

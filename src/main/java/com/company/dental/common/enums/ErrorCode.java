@@ -14,6 +14,10 @@ public enum ErrorCode {
     ACCOUNT_DISABLED(1002, "账号已停用"),
     TOKEN_INVALID(1003, "Token 无效或已过期"),
     PATIENT_NOT_FOUND(2001, "患者不存在"),
+    APPOINTMENT_NOT_FOUND(3001, "预约不存在"),
+    MEDICAL_RECORD_NOT_FOUND(4001, "病历不存在"),
+    TREATMENT_PLAN_NOT_FOUND(4002, "治疗计划不存在"),
+    CONSENT_FORM_NOT_FOUND(4003, "知情同意书不存在"),
     SYSTEM_ERROR(5000, "系统异常，请稍后重试");
 
     private final int code;

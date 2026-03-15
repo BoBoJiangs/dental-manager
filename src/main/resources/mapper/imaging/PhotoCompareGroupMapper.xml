@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.imaging.mapper.PhotoCompareGroupMapper">
+
+    <sql id="CompareScopeCondition">
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND (
+                        pre.clinic_id IN
+                        <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                            #{clinicId}
+                        </foreach>
+                        OR post.clinic_id IN
+                        <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                            #{clinicId}
+                        </foreach>
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="staffId != null">
+                    AND pcg.patient_id IN (
+                        SELECT patient_id FROM patient_doctor_rel WHERE doctor_id = #{staffId} AND status = 1
+                        UNION
+                        SELECT patient_id FROM appointment WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM medical_record WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM treatment_plan WHERE doctor_id = #{staffId} AND is_deleted = 0
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+    </sql>
+
+    <select id="selectCompareGroupList" resultType="com.company.dental.modules.imaging.vo.PhotoCompareGroupVO">
+        SELECT pcg.id,
+               pcg.patient_id AS patientId,
+               p.patient_name AS patientName,
+               pcg.medical_record_id AS medicalRecordId,
+               mr.record_no AS medicalRecordNo,
+               pcg.group_name AS groupName,
+               pcg.pre_image_id AS preImageId,
+               preFile.file_url AS preImageUrl,
+               pcg.post_image_id AS postImageId,
+               postFile.file_url AS postImageUrl,
+               pcg.compare_desc AS compareDesc,
+               pcg.created_by AS createdBy,
+               pcg.created_at AS createdAt
+        FROM photo_compare_group pcg
+        LEFT JOIN patient p ON p.id = pcg.patient_id
+        LEFT JOIN medical_record mr ON mr.id = pcg.medical_record_id
+        LEFT JOIN patient_image pre ON pre.id = pcg.pre_image_id
+        LEFT JOIN file_attachment preFile ON preFile.id = pre.file_id
+        LEFT JOIN patient_image post ON post.id = pcg.post_image_id
+        LEFT JOIN file_attachment postFile ON postFile.id = post.file_id
+        WHERE p.org_id = #{orgId}
+        <include refid="CompareScopeCondition"/>
+        <if test="query.patientId != null">
+            AND pcg.patient_id = #{query.patientId}
+        </if>
+        <if test="query.medicalRecordId != null">
+            AND pcg.medical_record_id = #{query.medicalRecordId}
+        </if>
+        ORDER BY pcg.created_at DESC, pcg.id DESC
+    </select>
+
+    <select id="selectCompareGroupDetailById" resultType="com.company.dental.modules.imaging.vo.PhotoCompareGroupVO">
+        SELECT pcg.id,
+               pcg.patient_id AS patientId,
+               p.patient_name AS patientName,
+               pcg.medical_record_id AS medicalRecordId,
+               mr.record_no AS medicalRecordNo,
+               pcg.group_name AS groupName,
+               pcg.pre_image_id AS preImageId,
+               preFile.file_url AS preImageUrl,
+               pcg.post_image_id AS postImageId,
+               postFile.file_url AS postImageUrl,
+               pcg.compare_desc AS compareDesc,
+               pcg.created_by AS createdBy,
+               pcg.created_at AS createdAt
+        FROM photo_compare_group pcg
+        LEFT JOIN patient p ON p.id = pcg.patient_id
+        LEFT JOIN medical_record mr ON mr.id = pcg.medical_record_id
+        LEFT JOIN patient_image pre ON pre.id = pcg.pre_image_id
+        LEFT JOIN file_attachment preFile ON preFile.id = pre.file_id
+        LEFT JOIN patient_image post ON post.id = pcg.post_image_id
+        LEFT JOIN file_attachment postFile ON postFile.id = post.file_id
+        WHERE pcg.id = #{id}
+          AND p.org_id = #{orgId}
+        <include refid="CompareScopeCondition"/>
+        LIMIT 1
+    </select>
+
+</mapper>

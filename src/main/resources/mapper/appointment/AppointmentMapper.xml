@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.appointment.mapper.AppointmentMapper">
+
+    <select id="selectAppointmentPage" resultType="com.company.dental.modules.appointment.vo.AppointmentPageItemVO">
+        SELECT a.id,
+               a.org_id,
+               a.clinic_id,
+               c.clinic_name,
+               a.appointment_no,
+               a.patient_id,
+               p.patient_name,
+               p.mobile AS patient_mobile,
+               a.doctor_id,
+               s.staff_name AS doctor_name,
+               a.source_type,
+               a.appointment_type,
+               a.appointment_date,
+               a.start_time,
+               a.end_time,
+               a.treatment_item_name,
+               a.status,
+               a.arrived_at,
+               a.no_show_flag,
+               a.remark
+        FROM appointment a
+        LEFT JOIN patient p ON p.id = a.patient_id
+        LEFT JOIN staff s ON s.id = a.doctor_id
+        LEFT JOIN clinic c ON c.id = a.clinic_id
+        WHERE a.is_deleted = 0
+          AND a.org_id = #{orgId}
+        <if test="accessScope == 'CLINIC' and clinicIds != null and clinicIds.size() > 0">
+            AND a.clinic_id IN
+            <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                #{clinicId}
+            </foreach>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT' and staffId != null">
+            AND a.doctor_id = #{staffId}
+        </if>
+        <if test="query.appointmentDate != null">
+            AND a.appointment_date = #{query.appointmentDate}
+        </if>
+        <if test="query.dateFrom != null">
+            AND a.appointment_date &gt;= #{query.dateFrom}
+        </if>
+        <if test="query.dateTo != null">
+            AND a.appointment_date &lt;= #{query.dateTo}
+        </if>
+        <if test="query.clinicId != null">
+            AND a.clinic_id = #{query.clinicId}
+        </if>
+        <if test="query.doctorId != null">
+            AND a.doctor_id = #{query.doctorId}
+        </if>
+        <if test="query.status != null and query.status != ''">
+            AND a.status = #{query.status}
+        </if>
+        <if test="query.keyword != null and query.keyword != ''">
+            AND (
+                a.appointment_no LIKE CONCAT('%', #{query.keyword}, '%')
+                OR p.patient_name LIKE CONCAT('%', #{query.keyword}, '%')
+                OR p.mobile LIKE CONCAT('%', #{query.keyword}, '%')
+                OR s.staff_name LIKE CONCAT('%', #{query.keyword}, '%')
+            )
+        </if>
+        ORDER BY a.start_time DESC, a.id DESC
+    </select>
+
+    <select id="selectAppointmentDetailById" resultType="com.company.dental.modules.appointment.vo.AppointmentDetailVO">
+        SELECT a.id,
+               a.org_id,
+               a.clinic_id,
+               c.clinic_name,
+               a.appointment_no,
+               a.patient_id,
+               p.patient_name,
+               p.mobile AS patient_mobile,
+               a.doctor_id,
+               s.staff_name AS doctor_name,
+               a.room_id,
+               a.source_type,
+               a.appointment_type,
+               a.appointment_date,
+               a.start_time,
+               a.end_time,
+               a.treatment_item_name,
+               a.status,
+               a.cancel_reason,
+               a.arrived_at,
+               a.no_show_flag,
+               a.remark,
+               q.queue_no,
+               q.queue_status,
+               q.checkin_at AS queue_checkin_at
+        FROM appointment a
+        LEFT JOIN patient p ON p.id = a.patient_id
+        LEFT JOIN staff s ON s.id = a.doctor_id
+        LEFT JOIN clinic c ON c.id = a.clinic_id
+        LEFT JOIN queue_record q ON q.appointment_id = a.id
+        WHERE a.id = #{id}
+          AND a.org_id = #{orgId}
+          AND a.is_deleted = 0
+        <if test="accessScope == 'CLINIC' and clinicIds != null and clinicIds.size() > 0">
+            AND a.clinic_id IN
+            <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                #{clinicId}
+            </foreach>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT' and staffId != null">
+            AND a.doctor_id = #{staffId}
+        </if>
+        LIMIT 1
+    </select>
+
+</mapper>

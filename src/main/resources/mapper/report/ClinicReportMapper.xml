@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.report.mapper.ClinicReportMapper">
+
+    <select id="selectClinicOverview" resultType="com.company.dental.modules.report.vo.ClinicOverviewVO">
+        SELECT #{query.statDate} AS stat_date,
+               #{query.clinicId} AS clinic_id,
+               <choose>
+                   <when test="query.clinicId != null">
+                       (SELECT clinic_name FROM clinic WHERE id = #{query.clinicId} LIMIT 1) AS clinic_name,
+                   </when>
+                   <otherwise>
+                       '全部门诊' AS clinic_name,
+                   </otherwise>
+               </choose>
+               COALESCE((
+                   SELECT COUNT(1)
+                   FROM appointment a
+                   WHERE a.org_id = #{orgId}
+                     AND a.is_deleted = 0
+                     AND a.appointment_date = #{query.statDate}
+                     <if test="query.clinicId != null">
+                         AND a.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0) AS appointment_count,
+               COALESCE((
+                   SELECT COUNT(1)
+                   FROM appointment a
+                   WHERE a.org_id = #{orgId}
+                     AND a.is_deleted = 0
+                     AND a.appointment_date = #{query.statDate}
+                     AND a.status = 'ARRIVED'
+                     <if test="query.clinicId != null">
+                         AND a.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0) AS arrived_count,
+               COALESCE((
+                   SELECT COUNT(1)
+                   FROM appointment a
+                   WHERE a.org_id = #{orgId}
+                     AND a.is_deleted = 0
+                     AND a.appointment_date = #{query.statDate}
+                     AND a.appointment_type = 'FIRST'
+                     <if test="query.clinicId != null">
+                         AND a.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0) AS first_visit_count,
+               COALESCE((
+                   SELECT COUNT(1)
+                   FROM appointment a
+                   WHERE a.org_id = #{orgId}
+                     AND a.is_deleted = 0
+                     AND a.appointment_date = #{query.statDate}
+                     AND a.appointment_type = 'REVISIT'
+                     <if test="query.clinicId != null">
+                         AND a.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0) AS revisit_count,
+               COALESCE((
+                   SELECT COUNT(1)
+                   FROM charge_order co
+                   WHERE co.org_id = #{orgId}
+                     AND co.is_deleted = 0
+                     AND DATE(co.charge_time) = #{query.statDate}
+                     <if test="query.clinicId != null">
+                         AND co.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0) AS charge_order_count,
+               COALESCE((
+                   SELECT SUM(co.receivable_amount)
+                   FROM charge_order co
+                   WHERE co.org_id = #{orgId}
+                     AND co.is_deleted = 0
+                     AND DATE(co.charge_time) = #{query.statDate}
+                     <if test="query.clinicId != null">
+                         AND co.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0.00) AS receivable_amount,
+               COALESCE((
+                   SELECT SUM(co.paid_amount)
+                   FROM charge_order co
+                   WHERE co.org_id = #{orgId}
+                     AND co.is_deleted = 0
+                     AND DATE(co.charge_time) = #{query.statDate}
+                     <if test="query.clinicId != null">
+                         AND co.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0.00) AS paid_amount,
+               COALESCE((
+                   SELECT SUM(rr.refund_amount)
+                   FROM refund_record rr
+                   WHERE rr.org_id = #{orgId}
+                     AND rr.refund_status = 'SUCCESS'
+                     AND DATE(rr.refunded_at) = #{query.statDate}
+                     <if test="query.clinicId != null">
+                         AND rr.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0.00) AS refund_amount,
+               COALESCE((
+                   SELECT SUM(co.arrears_amount)
+                   FROM charge_order co
+                   WHERE co.org_id = #{orgId}
+                     AND co.is_deleted = 0
+                     AND DATE(co.charge_time) = #{query.statDate}
+                     <if test="query.clinicId != null">
+                         AND co.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0.00) AS arrears_amount
+    </select>
+
+    <select id="selectDoctorPerformance" resultType="com.company.dental.modules.report.vo.DoctorPerformanceVO">
+        SELECT #{query.statDate} AS statDate,
+               s.main_clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               s.id AS doctorId,
+               s.staff_name AS doctorName,
+               COALESCE((
+                   SELECT COUNT(1)
+                   FROM appointment a
+                   WHERE a.org_id = #{orgId}
+                     AND a.is_deleted = 0
+                     AND a.doctor_id = s.id
+                     AND a.appointment_date = #{query.statDate}
+                     <if test="query.clinicId != null">
+                         AND a.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0) AS appointmentCount,
+               COALESCE((
+                   SELECT COUNT(1)
+                   FROM appointment a
+                   WHERE a.org_id = #{orgId}
+                     AND a.is_deleted = 0
+                     AND a.doctor_id = s.id
+                     AND a.status = 'ARRIVED'
+                     AND a.appointment_date = #{query.statDate}
+                     <if test="query.clinicId != null">
+                         AND a.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0) AS arrivedCount,
+               COALESCE((
+                   SELECT COUNT(1)
+                   FROM appointment a
+                   WHERE a.org_id = #{orgId}
+                     AND a.is_deleted = 0
+                     AND a.doctor_id = s.id
+                     AND a.appointment_type = 'FIRST'
+                     AND a.appointment_date = #{query.statDate}
+                     <if test="query.clinicId != null">
+                         AND a.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0) AS firstVisitCount,
+               COALESCE((
+                   SELECT COUNT(1)
+                   FROM appointment a
+                   WHERE a.org_id = #{orgId}
+                     AND a.is_deleted = 0
+                     AND a.doctor_id = s.id
+                     AND a.appointment_type = 'REVISIT'
+                     AND a.appointment_date = #{query.statDate}
+                     <if test="query.clinicId != null">
+                         AND a.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0) AS revisitCount,
+               COALESCE((
+                   SELECT COUNT(1)
+                   FROM medical_record mr
+                   WHERE mr.org_id = #{orgId}
+                     AND mr.is_deleted = 0
+                     AND mr.doctor_id = s.id
+                     AND DATE(mr.visit_date) = #{query.statDate}
+                     <if test="query.clinicId != null">
+                         AND mr.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0) AS treatmentCount,
+               COALESCE((
+                   SELECT SUM(ci.receivable_amount)
+                   FROM charge_item ci
+                   JOIN charge_order co ON co.id = ci.charge_order_id
+                   WHERE co.org_id = #{orgId}
+                     AND co.is_deleted = 0
+                     AND ci.doctor_id = s.id
+                     AND DATE(co.charge_time) = #{query.statDate}
+                     <if test="query.clinicId != null">
+                         AND co.clinic_id = #{query.clinicId}
+                     </if>
+               ), 0.00) AS performanceAmount
+        FROM staff s
+        LEFT JOIN clinic c ON c.id = s.main_clinic_id
+        WHERE s.org_id = #{orgId}
+          AND s.is_deleted = 0
+          AND s.status = 1
+          AND s.is_doctor = 1
+        <if test="query.doctorId != null">
+            AND s.id = #{query.doctorId}
+        </if>
+        <if test="query.clinicId != null">
+            AND s.main_clinic_id = #{query.clinicId}
+        </if>
+        <if test="clinicIds != null and clinicIds.size() > 0">
+            AND s.main_clinic_id IN
+            <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                #{clinicId}
+            </foreach>
+        </if>
+        ORDER BY performanceAmount DESC, doctorId ASC
+    </select>
+
+</mapper>

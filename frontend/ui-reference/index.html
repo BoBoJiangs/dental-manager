@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>牙科系统多端 UI 参考</title>
+    <link rel="stylesheet" href="./shared/base.css" />
+  </head>
+  <body class="showcase-page">
+    <header class="showcase-header">
+      <div>
+        <h1 class="showcase-title">牙科系统多端 UI 参考</h1>
+        <p class="showcase-subtitle">基于 `ui-ux-pro-max` 技能生成的设计系统，当前已给出 PC 管理后台、患者小程序、医生移动 App 的首版高保真结构参考。</p>
+      </div>
+      <div class="nav-chip-group">
+        <a class="nav-chip" href="../ui-reference/pc-web/dashboard.html">PC Web 工作台</a>
+        <a class="nav-chip" href="../ui-reference/mini-program/home.html">患者小程序首页</a>
+        <a class="nav-chip" href="../ui-reference/doctor-app/workbench.html">医生 App 工作台</a>
+      </div>
+    </header>
+
+    <main class="device-grid three">
+      <section class="device-card">
+        <h2>PC Web</h2>
+        <p>面向门诊管理员、前台、财务。重点页面先从工作台、预约中心、患者中心、收费中心开始。</p>
+        <div class="card-stack">
+          <div class="list-item">
+            <div class="list-main">
+              <div class="list-title">先开发</div>
+              <div class="list-desc">工作台 / 预约中心 / 患者中心</div>
+            </div>
+            <span class="badge info">优先</span>
+          </div>
+          <div class="list-item">
+            <div class="list-main">
+              <div class="list-title">推荐技术栈</div>
+              <div class="list-desc">React + Vite + Tailwind + React Router</div>
+            </div>
+          </div>
+        </div>
+        <p><a class="btn-primary" href="./pc-web/dashboard.html">查看原型</a></p>
+      </section>
+
+      <section class="device-card">
+        <h2>患者小程序</h2>
+        <p>面向患者。预约、门店、会员、记录是首批最关键场景，设计更强调轻量和单手操作。</p>
+        <div class="card-stack">
+          <div class="list-item">
+            <div class="list-main">
+              <div class="list-title">先开发</div>
+              <div class="list-desc">首页 / 在线预约 / 我的预约 / 会员中心</div>
+            </div>
+            <span class="badge success">上线快</span>
+          </div>
+          <div class="list-item">
+            <div class="list-main">
+              <div class="list-title">推荐技术栈</div>
+              <div class="list-desc">Taro + React</div>
+            </div>
+          </div>
+        </div>
+        <p><a class="btn-primary" href="./mini-program/home.html">查看原型</a></p>
+      </section>
+
+      <section class="device-card">
+        <h2>医生 App</h2>
+        <p>面向医生和助理。工作台、候诊、患者、接诊记录是首批核心，交互优先考虑高频操作与移动效率。</p>
+        <div class="card-stack">
+          <div class="list-item">
+            <div class="list-main">
+              <div class="list-title">先开发</div>
+              <div class="list-desc">工作台 / 今日预约 / 我的患者 / 接诊记录</div>
+            </div>
+            <span class="badge warning">第二批</span>
+          </div>
+          <div class="list-item">
+            <div class="list-main">
+              <div class="list-title">推荐技术栈</div>
+              <div class="list-desc">React Native</div>
+            </div>
+          </div>
+        </div>
+        <p><a class="btn-primary" href="./doctor-app/workbench.html">查看原型</a></p>
+      </section>
+    </main>
+  </body>
+</html>

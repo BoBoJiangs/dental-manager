@@ -1,0 +1,47 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  datasource:
+    url: ${DENTAL_DB_URL}
+    username: ${DENTAL_DB_USERNAME}
+    password: ${DENTAL_DB_PASSWORD}
+  data:
+    redis:
+      host: ${DENTAL_REDIS_HOST}
+      port: ${DENTAL_REDIS_PORT:6379}
+      database: ${DENTAL_REDIS_DB:0}
+  rabbitmq:
+    host: ${DENTAL_RABBITMQ_HOST}
+    port: ${DENTAL_RABBITMQ_PORT:5672}
+    username: ${DENTAL_RABBITMQ_USERNAME}
+    password: ${DENTAL_RABBITMQ_PASSWORD}
+  flyway:
+    enabled: ${DENTAL_FLYWAY_ENABLED:true}
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+dental:
+  jwt:
+    issuer: ${DENTAL_JWT_ISSUER:dental-management-system-prod}
+    secret: ${DENTAL_JWT_SECRET}
+  minio:
+    endpoint: ${DENTAL_MINIO_ENDPOINT}
+    access-key: ${DENTAL_MINIO_ACCESS_KEY}
+    secret-key: ${DENTAL_MINIO_SECRET_KEY}
+    bucket-name: ${DENTAL_MINIO_BUCKET:dental-prod}
+  messaging:
+    sms-enabled: ${DENTAL_SMS_MQ_ENABLED:true}
+  sms:
+    aliyun:
+      enabled: ${DENTAL_SMS_ALIYUN_ENABLED:true}
+      mock-enabled: false
+      endpoint: ${DENTAL_SMS_ALIYUN_ENDPOINT:https://dysmsapi.aliyuncs.com}
+      access-key-id: ${DENTAL_SMS_ALIYUN_ACCESS_KEY_ID}
+      access-key-secret: ${DENTAL_SMS_ALIYUN_ACCESS_KEY_SECRET}
+      region-id: ${DENTAL_SMS_ALIYUN_REGION_ID:cn-hangzhou}
+      default-sign-name: ${DENTAL_SMS_ALIYUN_SIGN_NAME}

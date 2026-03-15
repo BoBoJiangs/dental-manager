@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.file.mapper.FileAttachmentMapper">
+
+    <sql id="AttachmentScopeCondition">
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND (fa.clinic_id IS NULL OR fa.clinic_id IN
+                    <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                        #{clinicId}
+                    </foreach>)
+                </when>
+                <otherwise>
+                    AND fa.clinic_id IS NULL
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="staffId != null">
+                    AND (
+                        fa.patient_id IS NULL
+                        OR fa.patient_id IN (
+                            SELECT patient_id FROM patient_doctor_rel WHERE doctor_id = #{staffId} AND status = 1
+                            UNION
+                            SELECT patient_id FROM appointment WHERE doctor_id = #{staffId} AND is_deleted = 0
+                            UNION
+                            SELECT patient_id FROM medical_record WHERE doctor_id = #{staffId} AND is_deleted = 0
+                            UNION
+                            SELECT patient_id FROM treatment_plan WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        )
+                    )
+                </when>
+                <otherwise>
+                    AND fa.patient_id IS NULL
+                </otherwise>
+            </choose>
+        </if>
+    </sql>
+
+    <select id="selectAttachmentList" resultType="com.company.dental.modules.file.vo.FileAttachmentVO">
+        SELECT fa.id,
+               fa.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               fa.biz_type AS bizType,
+               fa.biz_id AS bizId,
+               fa.patient_id AS patientId,
+               p.patient_name AS patientName,
+               fa.medical_record_id AS medicalRecordId,
+               mr.record_no AS medicalRecordNo,
+               fa.file_name AS fileName,
+               fa.file_ext AS fileExt,
+               fa.mime_type AS mimeType,
+               fa.file_size AS fileSize,
+               fa.storage_type AS storageType,
+               fa.bucket_name AS bucketName,
+               fa.object_key AS objectKey,
+               fa.file_url AS fileUrl,
+               fa.upload_source AS uploadSource,
+               fa.uploader_id AS uploaderId,
+               fa.file_status AS fileStatus,
+               fa.created_at AS createdAt
+        FROM file_attachment fa
+        LEFT JOIN clinic c ON c.id = fa.clinic_id
+        LEFT JOIN patient p ON p.id = fa.patient_id
+        LEFT JOIN medical_record mr ON mr.id = fa.medical_record_id
+        WHERE fa.org_id = #{orgId}
+          AND fa.is_deleted = 0
+        <include refid="AttachmentScopeCondition"/>
+        <if test="query.clinicId != null">
+            AND fa.clinic_id = #{query.clinicId}
+        </if>
+        <if test="query.bizType != null and query.bizType != ''">
+            AND fa.biz_type = #{query.bizType}
+        </if>
+        <if test="query.bizId != null">
+            AND fa.biz_id = #{query.bizId}
+        </if>
+        <if test="query.patientId != null">
+            AND fa.patient_id = #{query.patientId}
+        </if>
+        <if test="query.medicalRecordId != null">
+            AND fa.medical_record_id = #{query.medicalRecordId}
+        </if>
+        ORDER BY fa.created_at DESC, fa.id DESC
+    </select>
+
+    <select id="selectAttachmentDetailById" resultType="com.company.dental.modules.file.vo.FileAttachmentVO">
+        SELECT fa.id,
+               fa.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               fa.biz_type AS bizType,
+               fa.biz_id AS bizId,
+               fa.patient_id AS patientId,
+               p.patient_name AS patientName,
+               fa.medical_record_id AS medicalRecordId,
+               mr.record_no AS medicalRecordNo,
+               fa.file_name AS fileName,
+               fa.file_ext AS fileExt,
+               fa.mime_type AS mimeType,
+               fa.file_size AS fileSize,
+               fa.storage_type AS storageType,
+               fa.bucket_name AS bucketName,
+               fa.object_key AS objectKey,
+               fa.file_url AS fileUrl,
+               fa.upload_source AS uploadSource,
+               fa.uploader_id AS uploaderId,
+               fa.file_status AS fileStatus,
+               fa.created_at AS createdAt
+        FROM file_attachment fa
+        LEFT JOIN clinic c ON c.id = fa.clinic_id
+        LEFT JOIN patient p ON p.id = fa.patient_id
+        LEFT JOIN medical_record mr ON mr.id = fa.medical_record_id
+        WHERE fa.id = #{id}
+          AND fa.org_id = #{orgId}
+          AND fa.is_deleted = 0
+        <include refid="AttachmentScopeCondition"/>
+        LIMIT 1
+    </select>
+
+</mapper>

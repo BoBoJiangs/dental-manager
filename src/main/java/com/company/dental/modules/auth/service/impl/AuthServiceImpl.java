@@ -3,6 +3,7 @@ package com.company.dental.modules.auth.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.company.dental.common.enums.ErrorCode;
 import com.company.dental.common.exception.BusinessException;
+import com.company.dental.framework.security.AuthContext;
 import com.company.dental.framework.security.JwtProperties;
 import com.company.dental.framework.security.JwtTokenProvider;
 import com.company.dental.framework.security.LoginUser;
@@ -11,6 +12,7 @@ import com.company.dental.modules.auth.entity.AuthUserEntity;
 import com.company.dental.modules.auth.mapper.AuthUserMapper;
 import com.company.dental.modules.auth.service.AuthService;
 import com.company.dental.modules.auth.vo.LoginResponse;
+import com.company.dental.modules.auth.vo.PermissionMetaVO;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,15 +28,21 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtProperties jwtProperties;
+    private final AuthMeAssembler authMeAssembler;
+    private final AuthPermissionAssembler authPermissionAssembler;
 
     public AuthServiceImpl(AuthUserMapper authUserMapper,
                            PasswordEncoder passwordEncoder,
                            JwtTokenProvider jwtTokenProvider,
-                           JwtProperties jwtProperties) {
+                           JwtProperties jwtProperties,
+                           AuthMeAssembler authMeAssembler,
+                           AuthPermissionAssembler authPermissionAssembler) {
         this.authUserMapper = authUserMapper;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtProperties = jwtProperties;
+        this.authMeAssembler = authMeAssembler;
+        this.authPermissionAssembler = authPermissionAssembler;
     }
 
     @Override
@@ -52,6 +60,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         List<String> roles = authUserMapper.selectRoleCodesByUserId(user.getId());
+        List<Long> clinicIds = authUserMapper.selectAuthorizedClinicIdsByUserId(user.getId());
+        List<String> dataScopes = authUserMapper.selectRoleDataScopesByUserId(user.getId());
         Long clinicId = authUserMapper.selectPrimaryClinicId(user.getId());
         LoginUser loginUser = LoginUser.builder()
                 .userId(user.getId())
@@ -60,7 +70,9 @@ public class AuthServiceImpl implements AuthService {
                 .username(user.getUsername())
                 .accountType(user.getAccountType())
                 .clinicId(clinicId)
+                .clinicIds(clinicIds)
                 .roles(roles)
+                .dataScopes(dataScopes)
                 .build();
         String accessToken = jwtTokenProvider.createAccessToken(loginUser);
 
@@ -78,7 +90,33 @@ public class AuthServiceImpl implements AuthService {
                 .username(user.getUsername())
                 .accountType(user.getAccountType())
                 .clinicId(clinicId)
+                .clinicIds(clinicIds)
                 .roles(roles)
+                .dataScopes(dataScopes)
                 .build();
+    }
+
+    @Override
+    public LoginUser currentUser() {
+        LoginUser loginUser = AuthContext.get();
+        if (loginUser == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED);
+        }
+        return loginUser;
+    }
+
+    @Override
+    public LoginResponse refreshToken() {
+        return authMeAssembler.buildRefreshResponse(currentUser());
+    }
+
+    @Override
+    public void logout() {
+        currentUser();
+    }
+
+    @Override
+    public PermissionMetaVO currentPermissions() {
+        return authPermissionAssembler.build(currentUser());
     }
 }

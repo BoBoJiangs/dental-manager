@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.sms.mapper.SmsTaskMapper">
+
+    <select id="selectSmsTaskPage" resultType="com.company.dental.modules.sms.vo.SmsTaskPageItemVO">
+        SELECT st.id,
+               st.clinic_id,
+               c.clinic_name,
+               st.biz_type,
+               st.biz_id,
+               st.patient_id,
+               p.patient_name,
+               st.mobile,
+               st.template_id,
+               tpl.template_code,
+               tpl.template_name,
+               st.task_status,
+               st.scheduled_at,
+               st.sent_at,
+               st.retry_count,
+               st.fail_reason,
+               st.created_at
+        FROM sms_task st
+        LEFT JOIN clinic c ON c.id = st.clinic_id
+        LEFT JOIN patient p ON p.id = st.patient_id
+        LEFT JOIN sms_template tpl ON tpl.id = st.template_id
+        WHERE st.org_id = #{orgId}
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND st.clinic_id IN
+                    <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                        #{clinicId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="staffId != null">
+                    AND st.patient_id IN (
+                        SELECT patient_id FROM patient_doctor_rel WHERE doctor_id = #{staffId} AND status = 1
+                        UNION
+                        SELECT patient_id FROM appointment WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM medical_record WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM treatment_plan WHERE doctor_id = #{staffId} AND is_deleted = 0
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="query.clinicId != null">
+            AND st.clinic_id = #{query.clinicId}
+        </if>
+        <if test="query.bizType != null and query.bizType != ''">
+            AND st.biz_type = #{query.bizType}
+        </if>
+        <if test="query.patientId != null">
+            AND st.patient_id = #{query.patientId}
+        </if>
+        <if test="query.taskStatus != null and query.taskStatus != ''">
+            AND st.task_status = #{query.taskStatus}
+        </if>
+        <if test="query.mobile != null and query.mobile != ''">
+            AND st.mobile LIKE CONCAT('%', #{query.mobile}, '%')
+        </if>
+        ORDER BY st.created_at DESC, st.id DESC
+    </select>
+
+    <select id="selectSmsTaskDetailById" resultType="com.company.dental.modules.sms.vo.SmsTaskDetailVO">
+        SELECT st.id,
+               st.org_id,
+               st.clinic_id,
+               c.clinic_name,
+               st.biz_type,
+               st.biz_id,
+               st.patient_id,
+               p.patient_name,
+               st.mobile,
+               st.template_id,
+               tpl.template_code,
+               tpl.template_name,
+               st.template_params AS template_params_json,
+               st.task_status,
+               st.scheduled_at,
+               st.sent_at,
+                st.retry_count,
+               st.fail_reason,
+               st.created_at
+        FROM sms_task st
+        LEFT JOIN clinic c ON c.id = st.clinic_id
+        LEFT JOIN patient p ON p.id = st.patient_id
+        LEFT JOIN sms_template tpl ON tpl.id = st.template_id
+        WHERE st.id = #{id}
+          AND st.org_id = #{orgId}
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND st.clinic_id IN
+                    <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                        #{clinicId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="staffId != null">
+                    AND st.patient_id IN (
+                        SELECT patient_id FROM patient_doctor_rel WHERE doctor_id = #{staffId} AND status = 1
+                        UNION
+                        SELECT patient_id FROM appointment WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM medical_record WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM treatment_plan WHERE doctor_id = #{staffId} AND is_deleted = 0
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT 1
+    </select>
+
+</mapper>

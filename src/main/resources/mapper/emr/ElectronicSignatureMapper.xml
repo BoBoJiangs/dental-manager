@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.emr.mapper.ElectronicSignatureMapper">
+
+    <sql id="SignatureScopeCondition">
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND es.clinic_id IN
+                    <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                        #{clinicId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="staffId != null">
+                    AND es.patient_id IN (
+                        SELECT patient_id FROM patient_doctor_rel WHERE doctor_id = #{staffId} AND status = 1
+                        UNION
+                        SELECT patient_id FROM appointment WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM medical_record WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM treatment_plan WHERE doctor_id = #{staffId} AND is_deleted = 0
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+    </sql>
+
+    <select id="selectSignatureList" resultType="com.company.dental.modules.emr.vo.ElectronicSignatureVO">
+        SELECT es.id,
+               es.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               es.patient_id AS patientId,
+               p.patient_name AS patientName,
+               es.medical_record_id AS medicalRecordId,
+               mr.record_no AS medicalRecordNo,
+               es.signer_name AS signerName,
+               es.signer_type AS signerType,
+               es.relation_to_patient AS relationToPatient,
+               es.signature_file_id AS signatureFileId,
+               fa.file_name AS signatureFileName,
+               fa.file_url AS signatureFileUrl,
+               es.signed_at AS signedAt,
+               es.ip_address AS ipAddress,
+               es.device_info AS deviceInfo,
+               es.remark,
+               es.created_at AS createdAt
+        FROM electronic_signature es
+        LEFT JOIN clinic c ON c.id = es.clinic_id
+        LEFT JOIN patient p ON p.id = es.patient_id
+        LEFT JOIN medical_record mr ON mr.id = es.medical_record_id
+        LEFT JOIN file_attachment fa ON fa.id = es.signature_file_id
+        WHERE es.org_id = #{orgId}
+        <include refid="SignatureScopeCondition"/>
+        <if test="query.clinicId != null">
+            AND es.clinic_id = #{query.clinicId}
+        </if>
+        <if test="query.patientId != null">
+            AND es.patient_id = #{query.patientId}
+        </if>
+        <if test="query.medicalRecordId != null">
+            AND es.medical_record_id = #{query.medicalRecordId}
+        </if>
+        <if test="query.signerType != null and query.signerType != ''">
+            AND es.signer_type = #{query.signerType}
+        </if>
+        ORDER BY es.signed_at DESC, es.id DESC
+    </select>
+
+    <select id="selectSignatureDetailById" resultType="com.company.dental.modules.emr.vo.ElectronicSignatureVO">
+        SELECT es.id,
+               es.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               es.patient_id AS patientId,
+               p.patient_name AS patientName,
+               es.medical_record_id AS medicalRecordId,
+               mr.record_no AS medicalRecordNo,
+               es.signer_name AS signerName,
+               es.signer_type AS signerType,
+               es.relation_to_patient AS relationToPatient,
+               es.signature_file_id AS signatureFileId,
+               fa.file_name AS signatureFileName,
+               fa.file_url AS signatureFileUrl,
+               es.signed_at AS signedAt,
+               es.ip_address AS ipAddress,
+               es.device_info AS deviceInfo,
+               es.remark,
+               es.created_at AS createdAt
+        FROM electronic_signature es
+        LEFT JOIN clinic c ON c.id = es.clinic_id
+        LEFT JOIN patient p ON p.id = es.patient_id
+        LEFT JOIN medical_record mr ON mr.id = es.medical_record_id
+        LEFT JOIN file_attachment fa ON fa.id = es.signature_file_id
+        WHERE es.id = #{id}
+          AND es.org_id = #{orgId}
+        <include refid="SignatureScopeCondition"/>
+        LIMIT 1
+    </select>
+
+</mapper>

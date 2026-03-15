@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.billing.mapper.CashierShiftRecordMapper">
+
+    <sql id="ShiftScopeCondition">
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND csr.clinic_id IN
+                    <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                        #{clinicId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND csr.clinic_id IN
+                    <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                        #{clinicId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+    </sql>
+
+    <select id="selectShiftPage" resultType="com.company.dental.modules.billing.vo.CashierShiftVO">
+        SELECT csr.id,
+               csr.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               csr.shift_no AS shiftNo,
+               csr.cashier_id AS cashierId,
+               s.staff_name AS cashierName,
+               csr.shift_date AS shiftDate,
+               csr.start_time AS startTime,
+               csr.end_time AS endTime,
+               csr.cash_amount AS cashAmount,
+               csr.wechat_amount AS wechatAmount,
+               csr.alipay_amount AS alipayAmount,
+               csr.card_amount AS cardAmount,
+               csr.balance_amount AS balanceAmount,
+               csr.refund_amount AS refundAmount,
+               csr.net_amount AS netAmount,
+               csr.shift_status AS shiftStatus,
+               csr.closed_by AS closedBy,
+               cb.staff_name AS closedByName,
+               csr.closed_at AS closedAt,
+               csr.remark
+        FROM cashier_shift_record csr
+        LEFT JOIN clinic c ON c.id = csr.clinic_id
+        LEFT JOIN staff s ON s.id = csr.cashier_id
+        LEFT JOIN staff cb ON cb.id = csr.closed_by
+        WHERE csr.org_id = #{orgId}
+        <include refid="ShiftScopeCondition"/>
+        <if test="query.clinicId != null">
+            AND csr.clinic_id = #{query.clinicId}
+        </if>
+        <if test="query.cashierId != null">
+            AND csr.cashier_id = #{query.cashierId}
+        </if>
+        <if test="query.shiftStatus != null and query.shiftStatus != ''">
+            AND csr.shift_status = #{query.shiftStatus}
+        </if>
+        <if test="query.shiftDate != null">
+            AND csr.shift_date = #{query.shiftDate}
+        </if>
+        ORDER BY csr.shift_date DESC, csr.start_time DESC, csr.id DESC
+    </select>
+
+    <select id="selectShiftDetailById" resultType="com.company.dental.modules.billing.vo.CashierShiftVO">
+        SELECT csr.id,
+               csr.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               csr.shift_no AS shiftNo,
+               csr.cashier_id AS cashierId,
+               s.staff_name AS cashierName,
+               csr.shift_date AS shiftDate,
+               csr.start_time AS startTime,
+               csr.end_time AS endTime,
+               csr.cash_amount AS cashAmount,
+               csr.wechat_amount AS wechatAmount,
+               csr.alipay_amount AS alipayAmount,
+               csr.card_amount AS cardAmount,
+               csr.balance_amount AS balanceAmount,
+               csr.refund_amount AS refundAmount,
+               csr.net_amount AS netAmount,
+               csr.shift_status AS shiftStatus,
+               csr.closed_by AS closedBy,
+               cb.staff_name AS closedByName,
+               csr.closed_at AS closedAt,
+               csr.remark
+        FROM cashier_shift_record csr
+        LEFT JOIN clinic c ON c.id = csr.clinic_id
+        LEFT JOIN staff s ON s.id = csr.cashier_id
+        LEFT JOIN staff cb ON cb.id = csr.closed_by
+        WHERE csr.id = #{id}
+          AND csr.org_id = #{orgId}
+        <include refid="ShiftScopeCondition"/>
+        LIMIT 1
+    </select>
+
+</mapper>

@@ -29,3 +29,12 @@ dental:
     issuer: dental-management-system-dev
     secret: ChangeMeToA32CharacterOrLongerSecretKey123456
     access-token-expire-minutes: 120
+  messaging:
+    sms-enabled: false
+  sms:
+    aliyun:
+      enabled: false
+      mock-enabled: true
+      endpoint: https://dysmsapi.aliyuncs.com
+      region-id: cn-hangzhou
+      default-sign-name: 牙科门诊

@@ -1,9 +1,11 @@
 package com.company.dental.modules.auth.controller;
 
 import com.company.dental.common.api.ApiResponse;
+import com.company.dental.framework.security.LoginUser;
 import com.company.dental.modules.auth.dto.LoginRequest;
 import com.company.dental.modules.auth.service.AuthService;
 import com.company.dental.modules.auth.vo.LoginResponse;
+import com.company.dental.modules.auth.vo.PermissionMetaVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,5 +37,30 @@ public class AuthController {
     @GetMapping("/health")
     public ApiResponse<String> health() {
         return ApiResponse.success("auth-ok");
+    }
+
+    @Operation(summary = "查询当前登录用户")
+    @GetMapping("/me")
+    public ApiResponse<LoginUser> me() {
+        return ApiResponse.success(authService.currentUser());
+    }
+
+    @Operation(summary = "刷新 Token")
+    @PostMapping("/refresh")
+    public ApiResponse<LoginResponse> refresh() {
+        return ApiResponse.success(authService.refreshToken());
+    }
+
+    @Operation(summary = "退出登录")
+    @PostMapping("/logout")
+    public ApiResponse<String> logout() {
+        authService.logout();
+        return ApiResponse.success("退出成功");
+    }
+
+    @Operation(summary = "查询当前权限元数据")
+    @GetMapping("/permissions")
+    public ApiResponse<PermissionMetaVO> permissions() {
+        return ApiResponse.success(authService.currentPermissions());
     }
 }

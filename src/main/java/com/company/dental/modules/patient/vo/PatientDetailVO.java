@@ -5,6 +5,8 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
 @Data
 @Builder
@@ -26,4 +28,8 @@ public class PatientDetailVO {
     private Integer patientStatus;
     private String remark;
     private PatientProfileVO profile;
+    @Builder.Default
+    private List<PatientTagVO> tags = Collections.emptyList();
+    @Builder.Default
+    private List<PatientDoctorVO> primaryDoctors = Collections.emptyList();
 }

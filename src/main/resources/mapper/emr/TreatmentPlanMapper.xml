@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.emr.mapper.TreatmentPlanMapper">
+
+    <sql id="TreatmentPlanScopeCondition">
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND tp.clinic_id IN
+                    <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                        #{clinicId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="staffId != null">
+                    AND (
+                        tp.doctor_id = #{staffId}
+                        OR tp.patient_id IN (
+                            SELECT patient_id FROM patient_doctor_rel WHERE doctor_id = #{staffId} AND status = 1
+                            UNION
+                            SELECT patient_id FROM appointment WHERE doctor_id = #{staffId} AND is_deleted = 0
+                            UNION
+                            SELECT patient_id FROM medical_record WHERE doctor_id = #{staffId} AND is_deleted = 0
+                            UNION
+                            SELECT patient_id FROM treatment_plan WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        )
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+    </sql>
+
+    <select id="selectTreatmentPlanPage" resultType="com.company.dental.modules.emr.vo.TreatmentPlanPageItemVO">
+        SELECT tp.id,
+               tp.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               tp.plan_no AS planNo,
+               tp.patient_id AS patientId,
+               p.patient_name AS patientName,
+               p.mobile AS patientMobile,
+               tp.medical_record_id AS medicalRecordId,
+               mr.record_no AS medicalRecordNo,
+               tp.doctor_id AS doctorId,
+               s.staff_name AS doctorName,
+               tp.plan_name AS planName,
+               tp.total_amount AS totalAmount,
+               tp.plan_status AS planStatus,
+               tp.start_date AS startDate,
+               tp.end_date AS endDate,
+               tp.remark,
+               tp.created_at AS createdAt
+        FROM treatment_plan tp
+        LEFT JOIN clinic c ON c.id = tp.clinic_id
+        LEFT JOIN patient p ON p.id = tp.patient_id
+        LEFT JOIN medical_record mr ON mr.id = tp.medical_record_id
+        LEFT JOIN staff s ON s.id = tp.doctor_id
+        WHERE tp.org_id = #{orgId}
+          AND tp.is_deleted = 0
+        <include refid="TreatmentPlanScopeCondition"/>
+        <if test="query.clinicId != null">
+            AND tp.clinic_id = #{query.clinicId}
+        </if>
+        <if test="query.patientId != null">
+            AND tp.patient_id = #{query.patientId}
+        </if>
+        <if test="query.medicalRecordId != null">
+            AND tp.medical_record_id = #{query.medicalRecordId}
+        </if>
+        <if test="query.doctorId != null">
+            AND tp.doctor_id = #{query.doctorId}
+        </if>
+        <if test="query.planStatus != null and query.planStatus != ''">
+            AND tp.plan_status = #{query.planStatus}
+        </if>
+        <if test="query.keyword != null and query.keyword != ''">
+            AND (
+                tp.plan_no LIKE CONCAT('%', #{query.keyword}, '%')
+                OR tp.plan_name LIKE CONCAT('%', #{query.keyword}, '%')
+                OR p.patient_name LIKE CONCAT('%', #{query.keyword}, '%')
+                OR p.mobile LIKE CONCAT('%', #{query.keyword}, '%')
+            )
+        </if>
+        ORDER BY tp.created_at DESC, tp.id DESC
+    </select>
+
+    <select id="selectTreatmentPlanDetailById" resultType="com.company.dental.modules.emr.vo.TreatmentPlanDetailVO">
+        SELECT tp.id,
+               tp.org_id AS orgId,
+               tp.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               tp.plan_no AS planNo,
+               tp.patient_id AS patientId,
+               p.patient_name AS patientName,
+               p.mobile AS patientMobile,
+               tp.medical_record_id AS medicalRecordId,
+               mr.record_no AS medicalRecordNo,
+               tp.doctor_id AS doctorId,
+               s.staff_name AS doctorName,
+               tp.plan_name AS planName,
+               tp.total_amount AS totalAmount,
+               tp.plan_status AS planStatus,
+               tp.start_date AS startDate,
+               tp.end_date AS endDate,
+               tp.remark,
+               tp.created_at AS createdAt
+        FROM treatment_plan tp
+        LEFT JOIN clinic c ON c.id = tp.clinic_id
+        LEFT JOIN patient p ON p.id = tp.patient_id
+        LEFT JOIN medical_record mr ON mr.id = tp.medical_record_id
+        LEFT JOIN staff s ON s.id = tp.doctor_id
+        WHERE tp.id = #{id}
+          AND tp.org_id = #{orgId}
+          AND tp.is_deleted = 0
+        <include refid="TreatmentPlanScopeCondition"/>
+        LIMIT 1
+    </select>
+
+</mapper>

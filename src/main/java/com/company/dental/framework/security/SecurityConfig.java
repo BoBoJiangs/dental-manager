@@ -2,6 +2,8 @@ package com.company.dental.framework.security;
 
 import com.company.dental.common.api.ApiResponse;
 import com.company.dental.common.enums.ErrorCode;
+import com.company.dental.framework.web.ApiAuditLogFilter;
+import com.company.dental.framework.web.TraceIdFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -20,13 +23,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.io.IOException;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
+    private final TraceIdFilter traceIdFilter;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final ApiAuditLogFilter apiAuditLogFilter;
     private final ObjectMapper objectMapper;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper) {
+    public SecurityConfig(TraceIdFilter traceIdFilter,
+                          JwtAuthenticationFilter jwtAuthenticationFilter,
+                          ApiAuditLogFilter apiAuditLogFilter,
+                          ObjectMapper objectMapper) {
+        this.traceIdFilter = traceIdFilter;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.apiAuditLogFilter = apiAuditLogFilter;
         this.objectMapper = objectMapper;
     }
 
@@ -51,7 +62,9 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(traceIdFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(jwtAuthenticationFilter, TraceIdFilter.class)
+                .addFilterAfter(apiAuditLogFilter, JwtAuthenticationFilter.class);
         return http.build();
     }
 

@@ -10,6 +10,7 @@ import java.util.Map;
 public class SmsSendRequest {
 
     private String phone;
+    private String signName;
     private String templateCode;
     private Map<String, String> templateParams;
 }

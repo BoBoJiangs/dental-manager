@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.billing.mapper.ChargeOrderMapper">
+
+    <select id="selectChargeOrderPage" resultType="com.company.dental.modules.billing.vo.ChargeOrderPageItemVO">
+        SELECT co.id,
+               co.org_id,
+               co.clinic_id,
+               c.clinic_name,
+               co.charge_no,
+               co.patient_id,
+               p.patient_name,
+               co.medical_record_id,
+               mr.record_no AS medical_record_no,
+               co.total_amount,
+               co.discount_amount,
+               co.receivable_amount,
+               co.paid_amount,
+               co.arrears_amount,
+               co.order_status,
+               co.charge_time,
+               co.remark
+        FROM charge_order co
+        LEFT JOIN clinic c ON c.id = co.clinic_id
+        LEFT JOIN patient p ON p.id = co.patient_id
+        LEFT JOIN medical_record mr ON mr.id = co.medical_record_id
+        WHERE co.is_deleted = 0
+          AND co.org_id = #{orgId}
+        <if test="accessScope == 'CLINIC' and clinicIds != null and clinicIds.size() > 0">
+            AND co.clinic_id IN
+            <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                #{clinicId}
+            </foreach>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT' and staffId != null">
+            AND mr.doctor_id = #{staffId}
+        </if>
+        <if test="query.patientId != null">
+            AND co.patient_id = #{query.patientId}
+        </if>
+        <if test="query.clinicId != null">
+            AND co.clinic_id = #{query.clinicId}
+        </if>
+        <if test="query.orderStatus != null and query.orderStatus != ''">
+            AND co.order_status = #{query.orderStatus}
+        </if>
+        <if test="query.chargeDateFrom != null">
+            AND co.charge_time &gt;= #{query.chargeDateFrom}
+        </if>
+        <if test="query.chargeDateTo != null">
+            AND co.charge_time &lt; DATE_ADD(#{query.chargeDateTo}, INTERVAL 1 DAY)
+        </if>
+        <if test="query.keyword != null and query.keyword != ''">
+            AND (
+                co.charge_no LIKE CONCAT('%', #{query.keyword}, '%')
+                OR p.patient_name LIKE CONCAT('%', #{query.keyword}, '%')
+                OR p.mobile LIKE CONCAT('%', #{query.keyword}, '%')
+            )
+        </if>
+        ORDER BY co.charge_time DESC, co.id DESC
+    </select>
+
+    <select id="selectChargeOrderDetailById" resultType="com.company.dental.modules.billing.vo.ChargeOrderDetailVO">
+        SELECT co.id,
+               co.org_id,
+               co.clinic_id,
+               c.clinic_name,
+               co.charge_no,
+               co.patient_id,
+               p.patient_name,
+               p.mobile AS patient_mobile,
+               co.medical_record_id,
+               mr.record_no AS medical_record_no,
+               co.treatment_plan_id,
+               co.cashier_id,
+               cashier.staff_name AS cashier_name,
+               co.total_amount,
+               co.discount_amount,
+               co.receivable_amount,
+               co.paid_amount,
+               co.arrears_amount,
+               co.order_status,
+               co.charge_time,
+               co.settled_at,
+               co.remark
+        FROM charge_order co
+        LEFT JOIN clinic c ON c.id = co.clinic_id
+        LEFT JOIN patient p ON p.id = co.patient_id
+        LEFT JOIN medical_record mr ON mr.id = co.medical_record_id
+        LEFT JOIN staff cashier ON cashier.id = co.cashier_id
+        WHERE co.id = #{id}
+          AND co.org_id = #{orgId}
+          AND co.is_deleted = 0
+        <if test="accessScope == 'CLINIC' and clinicIds != null and clinicIds.size() > 0">
+            AND co.clinic_id IN
+            <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                #{clinicId}
+            </foreach>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT' and staffId != null">
+            AND mr.doctor_id = #{staffId}
+        </if>
+        LIMIT 1
+    </select>
+
+</mapper>

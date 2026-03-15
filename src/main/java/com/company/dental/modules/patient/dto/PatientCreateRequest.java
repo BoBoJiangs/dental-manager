@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class PatientCreateRequest {
@@ -35,6 +36,8 @@ public class PatientCreateRequest {
     private Integer patientStatus = 1;
 
     private String remark;
+
+    private List<Long> tagIds;
 
     @Valid
     private PatientProfileCreateRequest profile;

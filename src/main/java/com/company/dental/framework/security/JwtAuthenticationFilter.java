@@ -14,16 +14,21 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProperties jwtProperties;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RolePermissionMatrix rolePermissionMatrix;
 
-    public JwtAuthenticationFilter(JwtProperties jwtProperties, JwtTokenProvider jwtTokenProvider) {
+    public JwtAuthenticationFilter(JwtProperties jwtProperties,
+                                   JwtTokenProvider jwtTokenProvider,
+                                   RolePermissionMatrix rolePermissionMatrix) {
         this.jwtProperties = jwtProperties;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.rolePermissionMatrix = rolePermissionMatrix;
     }
 
     @Override
@@ -34,9 +39,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(headerValue) && headerValue.startsWith(jwtProperties.getTokenPrefix())) {
                 String token = headerValue.substring(jwtProperties.getTokenPrefix().length());
                 LoginUser loginUser = jwtTokenProvider.parseToken(token);
-                List<SimpleGrantedAuthority> authorities = loginUser.getRoles() == null
-                        ? List.of()
-                        : loginUser.getRoles().stream().map(SimpleGrantedAuthority::new).toList();
+                Set<String> permissionAuthorities = rolePermissionMatrix.resolveAuthorities(loginUser.getRoles());
+                List<SimpleGrantedAuthority> authorities = permissionAuthorities.stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .toList();
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         loginUser,
                         null,

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.appointment.mapper.QueueRecordQueryMapper">
+
+    <sql id="QueueScopeCondition">
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND q.clinic_id IN
+                    <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                        #{clinicId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="staffId != null">
+                    AND q.doctor_id = #{staffId}
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+    </sql>
+
+    <select id="selectQueueList" resultType="com.company.dental.modules.appointment.vo.QueueRecordVO">
+        SELECT q.id,
+               q.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               q.appointment_id AS appointmentId,
+               a.appointment_no AS appointmentNo,
+               a.appointment_date AS appointmentDate,
+               q.patient_id AS patientId,
+               p.patient_name AS patientName,
+               p.mobile AS patientMobile,
+               q.doctor_id AS doctorId,
+               s.staff_name AS doctorName,
+               q.queue_no AS queueNo,
+               q.queue_status AS queueStatus,
+               q.checkin_at AS checkinAt,
+               q.call_at AS callAt,
+               q.start_treatment_at AS startTreatmentAt,
+               q.end_treatment_at AS endTreatmentAt,
+               q.remark
+        FROM queue_record q
+        LEFT JOIN clinic c ON c.id = q.clinic_id
+        LEFT JOIN appointment a ON a.id = q.appointment_id
+        LEFT JOIN patient p ON p.id = q.patient_id
+        LEFT JOIN staff s ON s.id = q.doctor_id
+        WHERE q.org_id = #{orgId}
+        <include refid="QueueScopeCondition"/>
+        <if test="query.queueDate != null">
+            AND a.appointment_date = #{query.queueDate}
+        </if>
+        <if test="query.clinicId != null">
+            AND q.clinic_id = #{query.clinicId}
+        </if>
+        <if test="query.doctorId != null">
+            AND q.doctor_id = #{query.doctorId}
+        </if>
+        <if test="query.queueStatus != null and query.queueStatus != ''">
+            AND q.queue_status = #{query.queueStatus}
+        </if>
+        ORDER BY q.checkin_at DESC, q.id DESC
+    </select>
+
+    <select id="selectQueueDetailById" resultType="com.company.dental.modules.appointment.vo.QueueRecordVO">
+        SELECT q.id,
+               q.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               q.appointment_id AS appointmentId,
+               a.appointment_no AS appointmentNo,
+               a.appointment_date AS appointmentDate,
+               q.patient_id AS patientId,
+               p.patient_name AS patientName,
+               p.mobile AS patientMobile,
+               q.doctor_id AS doctorId,
+               s.staff_name AS doctorName,
+               q.queue_no AS queueNo,
+               q.queue_status AS queueStatus,
+               q.checkin_at AS checkinAt,
+               q.call_at AS callAt,
+               q.start_treatment_at AS startTreatmentAt,
+               q.end_treatment_at AS endTreatmentAt,
+               q.remark
+        FROM queue_record q
+        LEFT JOIN clinic c ON c.id = q.clinic_id
+        LEFT JOIN appointment a ON a.id = q.appointment_id
+        LEFT JOIN patient p ON p.id = q.patient_id
+        LEFT JOIN staff s ON s.id = q.doctor_id
+        WHERE q.id = #{id}
+          AND q.org_id = #{orgId}
+        <include refid="QueueScopeCondition"/>
+        LIMIT 1
+    </select>
+
+</mapper>

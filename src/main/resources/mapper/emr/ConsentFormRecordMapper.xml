@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.emr.mapper.ConsentFormRecordMapper">
+
+    <sql id="ConsentScopeCondition">
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND cfr.clinic_id IN
+                    <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                        #{clinicId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="staffId != null">
+                    AND cfr.patient_id IN (
+                        SELECT patient_id FROM patient_doctor_rel WHERE doctor_id = #{staffId} AND status = 1
+                        UNION
+                        SELECT patient_id FROM appointment WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM medical_record WHERE doctor_id = #{staffId} AND is_deleted = 0
+                        UNION
+                        SELECT patient_id FROM treatment_plan WHERE doctor_id = #{staffId} AND is_deleted = 0
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+    </sql>
+
+    <select id="selectConsentForms" resultType="com.company.dental.modules.emr.vo.ConsentFormVO">
+        SELECT cfr.id,
+               cfr.org_id AS orgId,
+               cfr.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               cfr.patient_id AS patientId,
+               p.patient_name AS patientName,
+               cfr.medical_record_id AS medicalRecordId,
+               mr.record_no AS medicalRecordNo,
+               cfr.form_code AS formCode,
+               cfr.form_name AS formName,
+               cfr.form_content AS formContent,
+               cfr.signer_signature_id AS signerSignatureId,
+               cfr.doctor_signature_id AS doctorSignatureId,
+               cfr.form_status AS formStatus,
+               cfr.signed_at AS signedAt,
+               cfr.created_at AS createdAt
+        FROM consent_form_record cfr
+        LEFT JOIN clinic c ON c.id = cfr.clinic_id
+        LEFT JOIN patient p ON p.id = cfr.patient_id
+        LEFT JOIN medical_record mr ON mr.id = cfr.medical_record_id
+        WHERE cfr.org_id = #{orgId}
+        <include refid="ConsentScopeCondition"/>
+        <if test="query.clinicId != null">
+            AND cfr.clinic_id = #{query.clinicId}
+        </if>
+        <if test="query.patientId != null">
+            AND cfr.patient_id = #{query.patientId}
+        </if>
+        <if test="query.medicalRecordId != null">
+            AND cfr.medical_record_id = #{query.medicalRecordId}
+        </if>
+        <if test="query.formStatus != null and query.formStatus != ''">
+            AND cfr.form_status = #{query.formStatus}
+        </if>
+        ORDER BY cfr.created_at DESC, cfr.id DESC
+    </select>
+
+    <select id="selectConsentFormDetailById" resultType="com.company.dental.modules.emr.vo.ConsentFormVO">
+        SELECT cfr.id,
+               cfr.org_id AS orgId,
+               cfr.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               cfr.patient_id AS patientId,
+               p.patient_name AS patientName,
+               cfr.medical_record_id AS medicalRecordId,
+               mr.record_no AS medicalRecordNo,
+               cfr.form_code AS formCode,
+               cfr.form_name AS formName,
+               cfr.form_content AS formContent,
+               cfr.signer_signature_id AS signerSignatureId,
+               cfr.doctor_signature_id AS doctorSignatureId,
+               cfr.form_status AS formStatus,
+               cfr.signed_at AS signedAt,
+               cfr.created_at AS createdAt
+        FROM consent_form_record cfr
+        LEFT JOIN clinic c ON c.id = cfr.clinic_id
+        LEFT JOIN patient p ON p.id = cfr.patient_id
+        LEFT JOIN medical_record mr ON mr.id = cfr.medical_record_id
+        WHERE cfr.id = #{id}
+          AND cfr.org_id = #{orgId}
+        <include refid="ConsentScopeCondition"/>
+        LIMIT 1
+    </select>
+
+</mapper>

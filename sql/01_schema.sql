@@ -171,6 +171,17 @@ CREATE TABLE IF NOT EXISTS sys_user_role (
   UNIQUE KEY uk_user_role_clinic (user_id, role_id, clinic_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户角色关联表';
 
+CREATE TABLE IF NOT EXISTS sys_role_permission (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  role_id BIGINT NOT NULL,
+  permission_code VARCHAR(64) NOT NULL,
+  permission_type VARCHAR(16) NOT NULL COMMENT 'MENU/BUTTON',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_role_permission (role_id, permission_code, permission_type),
+  KEY idx_role_permission_role_id (role_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色权限表';
+
 -- =========================================================
 -- 2. 患者中心
 -- =========================================================

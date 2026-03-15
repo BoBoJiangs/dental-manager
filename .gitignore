@@ -3,3 +3,9 @@ target/
 .idea/
 *.iml
 *.log
+.DS_Store
+.codex/
+node_modules/
+dist/
+frontend/admin-web/test-results/
+frontend/admin-web/playwright-report/

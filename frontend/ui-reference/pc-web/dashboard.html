@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PC Web 工作台</title>
+    <link rel="stylesheet" href="../shared/base.css" />
+  </head>
+  <body class="showcase-page">
+    <div class="pc-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark"></div>
+          <div>
+            <div class="list-title">Dental Manager</div>
+            <div class="list-desc">总院门诊</div>
+          </div>
+        </div>
+        <nav class="menu">
+          <a class="menu-item active" href="#">工作台</a>
+          <a class="menu-item" href="#">预约中心</a>
+          <a class="menu-item" href="#">患者中心</a>
+          <a class="menu-item" href="#">门诊接诊</a>
+          <a class="menu-item" href="#">影像资料</a>
+          <a class="menu-item" href="#">收费财务</a>
+          <a class="menu-item" href="#">会员中心</a>
+          <a class="menu-item" href="#">短信中心</a>
+          <a class="menu-item" href="#">统计分析</a>
+          <a class="menu-item" href="#">基础设置</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <h1 class="showcase-title" style="font-size: 24px;">工作台</h1>
+            <p class="showcase-subtitle">2026-03-14 星期六 · 今日接诊、候诊、收费和短信概览</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="search-box">搜索患者 / 预约号 / 手机号</div>
+            <button class="btn-primary">新建预约</button>
+          </div>
+        </header>
+
+        <section class="stats-grid four">
+          <article class="stat-card">
+            <div class="stat-label">今日预约</div>
+            <div class="stat-value">36</div>
+            <div class="stat-meta">较昨日 +8.2%</div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-label">已到诊</div>
+            <div class="stat-value">24</div>
+            <div class="stat-meta">到诊率 66.7%</div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-label">待接诊</div>
+            <div class="stat-value">7</div>
+            <div class="stat-meta">平均等待 11 分钟</div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-label">今日实收</div>
+            <div class="stat-value">¥18,620</div>
+            <div class="stat-meta">应收 ¥21,480</div>
+          </article>
+        </section>
+
+        <section class="two-column">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="section-title">今日预约</h2>
+                <p class="showcase-subtitle">优先展示 2 小时内就诊与状态变化</p>
+              </div>
+              <span class="badge info">预约中心</span>
+            </div>
+            <div class="panel-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>时间</th>
+                    <th>患者</th>
+                    <th>医生</th>
+                    <th>项目</th>
+                    <th>状态</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>09:30</td>
+                    <td>王小明 / 139****0001</td>
+                    <td>张医生</td>
+                    <td>正畸初诊</td>
+                    <td><span class="badge warning">待到诊</span></td>
+                  </tr>
+                  <tr>
+                    <td>10:00</td>
+                    <td>李小美 / 139****0002</td>
+                    <td>李医生</td>
+                    <td>种植复诊</td>
+                    <td><span class="badge success">已签到</span></td>
+                  </tr>
+                  <tr>
+                    <td>10:30</td>
+                    <td>陈阿姨 / 138****3310</td>
+                    <td>王院长</td>
+                    <td>修复复诊</td>
+                    <td><span class="badge info">候诊中</span></td>
+                  </tr>
+                  <tr>
+                    <td>11:00</td>
+                    <td>周先生 / 136****8921</td>
+                    <td>张医生</td>
+                    <td>洗牙</td>
+                    <td><span class="badge danger">已改约</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="section-title">候诊队列</h2>
+                <p class="showcase-subtitle">按门诊实时刷新</p>
+              </div>
+              <span class="badge info">候诊管理</span>
+            </div>
+            <div class="panel-body list">
+              <div class="list-item">
+                <div class="list-main">
+                  <div class="list-title">Q-001 · 王小明</div>
+                  <div class="list-desc">正畸初诊 · 张医生 · 已等候 08 分钟</div>
+                </div>
+                <span class="badge info">叫号中</span>
+              </div>
+              <div class="list-item">
+                <div class="list-main">
+                  <div class="list-title">Q-002 · 李小美</div>
+                  <div class="list-desc">种植复诊 · 李医生 · 已等候 12 分钟</div>
+                </div>
+                <span class="badge warning">待接诊</span>
+              </div>
+              <div class="list-item">
+                <div class="list-main">
+                  <div class="list-title">Q-003 · 陈阿姨</div>
+                  <div class="list-desc">修复复诊 · 王院长 · 已进入诊室</div>
+                </div>
+                <span class="badge success">治疗中</span>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="three-column">
+          <article class="panel">
+            <div class="panel-header">
+              <h2 class="section-title">收费提醒</h2>
+              <span class="badge warning">财务</span>
+            </div>
+            <div class="panel-body list">
+              <div class="list-item">
+                <div class="list-main">
+                  <div class="list-title">李小美</div>
+                  <div class="list-desc">应收 ¥5,200 / 已收 ¥3,000 / 欠费 ¥2,200</div>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="list-main">
+                  <div class="list-title">王小明</div>
+                  <div class="list-desc">治疗计划已生成，可直接带出收费项</div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <h2 class="section-title">短信任务</h2>
+              <span class="badge success">短信中心</span>
+            </div>
+            <div class="panel-body timeline">
+              <div class="timeline-item">
+                <div class="list-desc">10:20</div>
+                <div class="list-main">
+                  <div class="list-title">复诊提醒</div>
+                  <div class="list-desc">陈阿姨 · 明日 09:30</div>
+                </div>
+                <span class="badge success">成功</span>
+              </div>
+              <div class="timeline-item">
+                <div class="list-desc">11:10</div>
+                <div class="list-main">
+                  <div class="list-title">预约确认</div>
+                  <div class="list-desc">周先生 · 已推送</div>
+                </div>
+                <span class="badge warning">待发</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <h2 class="section-title">待办事项</h2>
+              <span class="badge info">工作流</span>
+            </div>
+            <div class="panel-body list">
+              <div class="list-item">
+                <div class="list-main">
+                  <div class="list-title">3 份知情同意书待签</div>
+                  <div class="list-desc">种植 / 正畸模板已就绪</div>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="list-main">
+                  <div class="list-title">2 笔欠费待跟进</div>
+                  <div class="list-desc">建议今日关班前处理</div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

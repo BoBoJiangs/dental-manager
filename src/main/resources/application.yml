@@ -10,20 +10,9 @@ spring:
     active: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/dental_mgmt?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
-    username: root
-    password: root
   data:
     redis:
-      host: 127.0.0.1
-      port: 6379
-      database: 0
       timeout: 5s
-  rabbitmq:
-    host: 127.0.0.1
-    port: 5672
-    username: guest
-    password: guest
   jackson:
     time-zone: Asia/Shanghai
     date-format: yyyy-MM-dd HH:mm:ss
@@ -56,28 +45,36 @@ springdoc:
 
 dental:
   jwt:
-    issuer: dental-management-system
-    secret: ChangeMeToA32CharacterOrLongerSecretKey123456
     access-token-expire-minutes: 120
     header-name: Authorization
     token-prefix: "Bearer "
-  minio:
-    endpoint: http://127.0.0.1:9000
-    access-key: minioadmin
-    secret-key: minioadmin
-    bucket-name: dental-dev
+  messaging:
+    sms-enabled: false
+  biz-no:
+    key-prefix: biz:no
+    date-pattern: yyyyMMdd
+    sequence-length: 5
+    expire-days: 2
+    prefixes:
+      PATIENT: P
+      APPOINTMENT: A
+      MEDICAL_RECORD: MR
+      CHARGE_ORDER: C
+      MEMBER_ACCOUNT: M
+      TREATMENT_PLAN: TP
+      CASHIER_SHIFT: CS
+      QUEUE: Q
+      PAYMENT: PM
+      REFUND: RF
+  sms:
+    aliyun:
+      enabled: false
+      mock-enabled: true
+      endpoint: https://dysmsapi.aliyuncs.com
+      region-id: cn-hangzhou
 
 logging:
   level:
     com.company.dental: info
-
----
-# 初始化登录账号依赖 sql/02_init_data.sql 中的 user_account 数据。
-# 其中密码采用 Spring Security DelegatingPasswordEncoder 可识别的 {noop} 前缀，
-# 例如 admin / Admin@123456 仅用于本地开发联调。
-spring:
-  config:
-    activate:
-      on-profile: dev
-  flyway:
-    enabled: false
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [trace:%X{traceId:-} req:%X{requestId:-}] %logger{36} - %msg%n"

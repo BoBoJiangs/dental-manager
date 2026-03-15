@@ -1,0 +1,30 @@
+export const availableMenuPermissions = [
+  'WORKBENCH_VIEW',
+  'PATIENT_VIEW',
+  'APPOINTMENT_VIEW',
+  'EMR_VIEW',
+  'IMAGING_VIEW',
+  'BILLING_VIEW',
+  'MEMBER_VIEW',
+  'SMS_VIEW',
+  'REPORT_VIEW',
+  'ORG_VIEW',
+  'ORG_ROLE_VIEW',
+]
+
+export const availableButtonPermissions = [
+  'PATIENT_EDIT',
+  'PATIENT_DELETE',
+  'APPOINTMENT_EDIT',
+  'APPOINTMENT_CHECKIN',
+  'EMR_EDIT',
+  'DENTALCHART_EDIT',
+  'IMAGING_EDIT',
+  'BILLING_CREATE',
+  'BILLING_PAYMENT',
+  'BILLING_REFUND',
+  'MEMBER_CREATE',
+  'MEMBER_OPERATE',
+  'SMS_CREATE',
+  'ORG_EDIT',
+]

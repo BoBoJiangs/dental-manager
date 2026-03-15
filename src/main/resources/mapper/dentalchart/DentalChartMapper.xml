@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.dentalchart.mapper.DentalChartMapper">
+
+    <select id="selectByMedicalRecordId" resultType="com.company.dental.modules.dentalchart.vo.DentalChartVO">
+        SELECT dc.id,
+               dc.org_id,
+               dc.clinic_id,
+               c.clinic_name,
+               dc.patient_id,
+               p.patient_name,
+               dc.medical_record_id,
+               mr.record_no AS medical_record_no,
+               dc.chart_type,
+               dc.chart_version,
+               dc.chart_status,
+               dc.updated_at
+        FROM dental_chart dc
+        LEFT JOIN clinic c ON c.id = dc.clinic_id
+        LEFT JOIN patient p ON p.id = dc.patient_id
+        LEFT JOIN medical_record mr ON mr.id = dc.medical_record_id
+        WHERE dc.medical_record_id = #{medicalRecordId}
+          AND dc.org_id = #{orgId}
+        ORDER BY dc.id DESC
+        LIMIT 1
+    </select>
+
+</mapper>

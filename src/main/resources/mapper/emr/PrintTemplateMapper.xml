@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.emr.mapper.PrintTemplateMapper">
+
+    <select id="selectTemplateList" resultType="com.company.dental.modules.emr.vo.PrintTemplateVO">
+        SELECT pt.id,
+               pt.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               pt.template_code AS templateCode,
+               pt.template_name AS templateName,
+               pt.template_type AS templateType,
+               pt.content,
+               pt.is_default AS isDefault,
+               pt.status,
+               pt.remark
+        FROM print_template pt
+        LEFT JOIN clinic c ON c.id = pt.clinic_id
+        WHERE pt.org_id = #{orgId}
+          AND pt.status = 1
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND (pt.clinic_id IS NULL OR pt.clinic_id IN
+                    <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                        #{clinicId}
+                    </foreach>)
+                </when>
+                <otherwise>
+                    AND pt.clinic_id IS NULL
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND (pt.clinic_id IS NULL OR pt.clinic_id IN
+                    <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                        #{clinicId}
+                    </foreach>)
+                </when>
+                <otherwise>
+                    AND pt.clinic_id IS NULL
+                </otherwise>
+            </choose>
+        </if>
+        <if test="query.clinicId != null">
+            AND (pt.clinic_id IS NULL OR pt.clinic_id = #{query.clinicId})
+        </if>
+        <if test="query.templateType != null and query.templateType != ''">
+            AND pt.template_type = #{query.templateType}
+        </if>
+        <if test="query.keyword != null and query.keyword != ''">
+            AND (
+                pt.template_code LIKE CONCAT('%', #{query.keyword}, '%')
+                OR pt.template_name LIKE CONCAT('%', #{query.keyword}, '%')
+            )
+        </if>
+        ORDER BY pt.is_default DESC, pt.id ASC
+    </select>
+
+</mapper>

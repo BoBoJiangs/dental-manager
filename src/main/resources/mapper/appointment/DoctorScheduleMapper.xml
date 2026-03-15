@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.dental.modules.appointment.mapper.DoctorScheduleMapper">
+
+    <select id="selectScheduleList" resultType="com.company.dental.modules.appointment.vo.DoctorScheduleVO">
+        SELECT ds.id,
+               ds.clinic_id AS clinicId,
+               c.clinic_name AS clinicName,
+               ds.doctor_id AS doctorId,
+               s.staff_name AS doctorName,
+               ds.room_id AS roomId,
+               r.room_name AS roomName,
+               ds.schedule_date AS scheduleDate,
+               ds.start_time AS startTime,
+               ds.end_time AS endTime,
+               ds.schedule_type AS scheduleType,
+               ds.max_appointment_count AS maxAppointmentCount,
+               ds.status,
+               ds.remark
+        FROM doctor_schedule ds
+        LEFT JOIN clinic c ON c.id = ds.clinic_id
+        LEFT JOIN staff s ON s.id = ds.doctor_id
+        LEFT JOIN room r ON r.id = ds.room_id
+        WHERE ds.org_id = #{orgId}
+          AND ds.is_deleted = 0
+        <if test="accessScope == 'CLINIC'">
+            <choose>
+                <when test="clinicIds != null and clinicIds.size() > 0">
+                    AND ds.clinic_id IN
+                    <foreach collection="clinicIds" item="clinicId" open="(" separator="," close=")">
+                        #{clinicId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="accessScope == 'SELF_PATIENT'">
+            <choose>
+                <when test="staffId != null">
+                    AND ds.doctor_id = #{staffId}
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="query.scheduleDate != null">
+            AND ds.schedule_date = #{query.scheduleDate}
+        </if>
+        <if test="query.clinicId != null">
+            AND ds.clinic_id = #{query.clinicId}
+        </if>
+        <if test="query.doctorId != null">
+            AND ds.doctor_id = #{query.doctorId}
+        </if>
+        <if test="query.status != null">
+            AND ds.status = #{query.status}
+        </if>
+        ORDER BY ds.schedule_date DESC, ds.start_time ASC, ds.id ASC
+    </select>
+
+</mapper>

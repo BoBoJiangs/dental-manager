@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>医生 App 工作台</title>
+    <link rel="stylesheet" href="../shared/base.css" />
+  </head>
+  <body class="showcase-page">
+    <header class="showcase-header">
+      <div>
+        <h1 class="showcase-title">医生 App 工作台</h1>
+        <p class="showcase-subtitle">强调候诊、接诊、患者入口和移动端高频操作效率。</p>
+      </div>
+      <div class="nav-chip-group">
+        <a class="nav-chip" href="../index.html">返回总览</a>
+      </div>
+    </header>
+
+    <div class="phone-shell">
+      <div class="phone-screen">
+        <div class="mobile-page">
+          <div class="mobile-topbar">
+            <div>
+              <div class="mobile-title">张医生</div>
+              <div class="showcase-subtitle">今日 12 位预约患者 · 总院门诊</div>
+            </div>
+            <span class="badge success">在线</span>
+          </div>
+
+          <section class="stats-grid" style="grid-template-columns: repeat(2, minmax(0,1fr));">
+            <article class="stat-card">
+              <div class="stat-label">待接诊</div>
+              <div class="stat-value" style="font-size: 26px;">4</div>
+              <div class="stat-meta">队列平均 9 分钟</div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-label">已完成</div>
+              <div class="stat-value" style="font-size: 26px;">6</div>
+              <div class="stat-meta">接诊效率 +12%</div>
+            </article>
+          </section>
+
+          <section class="mobile-section card-stack">
+            <article class="hero-card">
+              <div class="card-title" style="font-size: 20px;">当前重点患者</div>
+              <p>王小明 · 正畸初诊 · 已签到，等待叫号</p>
+              <div style="display: flex; gap: 10px; margin-top: 14px;">
+                <button class="btn-primary" style="background: rgba(255,255,255,0.16);">开始接诊</button>
+                <button class="btn-secondary" style="background: rgba(255,255,255,0.96);">查看病历</button>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <h2 class="section-title">候诊队列</h2>
+                <span class="badge warning">4 人</span>
+              </div>
+              <div class="panel-body list">
+                <div class="list-item">
+                  <div class="list-main">
+                    <div class="list-title">Q-001 · 王小明</div>
+                    <div class="list-desc">09:30 · 正畸初诊 · 已签到</div>
+                  </div>
+                  <span class="badge info">叫号</span>
+                </div>
+                <div class="list-item">
+                  <div class="list-main">
+                    <div class="list-title">Q-002 · 陈阿姨</div>
+                    <div class="list-desc">10:00 · 修复复诊 · 已等候 12 分钟</div>
+                  </div>
+                  <span class="badge warning">待接诊</span>
+                </div>
+                <div class="list-item">
+                  <div class="list-main">
+                    <div class="list-title">Q-003 · 周先生</div>
+                    <div class="list-desc">10:30 · 洗牙复诊 · 资料已齐</div>
+                  </div>
+                  <span class="badge success">准备中</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <h2 class="section-title">我的患者</h2>
+                <span class="badge info">快捷入口</span>
+              </div>
+              <div class="panel-body list">
+                <div class="list-item">
+                  <div class="list-main">
+                    <div class="list-title">李小美</div>
+                    <div class="list-desc">种植复诊 · 最近病历 2 条 · 影像 5 张</div>
+                  </div>
+                </div>
+                <div class="list-item">
+                  <div class="list-main">
+                    <div class="list-title">王小明</div>
+                    <div class="list-desc">正畸初诊 · 待创建治疗计划</div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </section>
+        </div>
+
+        <footer class="tabbar">
+          <div class="tab-item active">
+            <div>工作台</div>
+            <div>Desk</div>
+          </div>
+          <div class="tab-item">
+            <div>患者</div>
+            <div>Patients</div>
+          </div>
+          <div class="tab-item">
+            <div>记录</div>
+            <div>Records</div>
+          </div>
+          <div class="tab-item">
+            <div>我的</div>
+            <div>Mine</div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

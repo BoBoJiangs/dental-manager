@@ -27,7 +27,10 @@
 
       <div class="content">
         <header class="topbar">
-          <div class="topbar-title">{{ currentTitle }}</div>
+          <div class="topbar-main">
+            <div class="topbar-kicker">Dental Manager</div>
+            <div class="topbar-title">{{ currentTitle }}</div>
+          </div>
           <div class="topbar-actions">
             <el-tag type="info">{{ authStore.user?.roles?.join(' / ') || '未加载角色' }}</el-tag>
             <el-button @click="handleLogout">退出登录</el-button>

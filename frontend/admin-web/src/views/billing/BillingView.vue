@@ -1,19 +1,46 @@
 <template>
-  <section class="page-shell">
-    <div class="page-card">
+  <section class="page-shell billing-page">
+    <div class="page-card billing-toolbar-card">
       <div class="el-card__body">
-        <PageHeader title="收费财务" description="包含收费单、支付退款、欠费状态和收银交班。">
-          <el-button v-if="hasButtonPermission('BILLING_CREATE')" type="primary" @click="openChargeDialog">新建收费单</el-button>
-          <el-button v-if="hasButtonPermission('BILLING_PAYMENT')" type="primary" plain @click="openShiftDialog">开班</el-button>
-        </PageHeader>
-        <el-form :inline="true" :model="filters" class="toolbar" style="margin-top: 18px;">
+        <div class="billing-toolbar-head">
+          <div class="billing-toolbar-copy">
+            <h2 class="billing-title">收费财务</h2>
+            <p class="billing-desc">收费、退款、欠费和交班统一维护。</p>
+          </div>
+          <div class="billing-hero-actions">
+            <el-tag effect="plain" round>开班中 {{ openShiftCount }}</el-tag>
+            <el-button v-if="hasButtonPermission('BILLING_PAYMENT')" plain @click="openShiftDialog">开班</el-button>
+            <el-button v-if="hasButtonPermission('BILLING_CREATE')" type="primary" @click="openChargeDialog">新建收费单</el-button>
+          </div>
+        </div>
+
+        <div class="billing-stat-list">
+          <div class="billing-stat-chip billing-stat-chip-primary">
+            <span class="billing-stat-label">收费单</span>
+            <strong class="billing-stat-value">{{ pagination.total }}</strong>
+          </div>
+          <div class="billing-stat-chip">
+            <span class="billing-stat-label">应收</span>
+            <strong class="billing-stat-value">{{ formatCurrency(pageReceivableAmount) }}</strong>
+          </div>
+          <div class="billing-stat-chip">
+            <span class="billing-stat-label">实收</span>
+            <strong class="billing-stat-value">{{ formatCurrency(pagePaidAmount) }}</strong>
+          </div>
+          <div class="billing-stat-chip">
+            <span class="billing-stat-label">欠费</span>
+            <strong class="billing-stat-value">{{ formatCurrency(pageArrearsAmount) }}</strong>
+          </div>
+        </div>
+
+        <el-form :model="filters" label-position="top" class="billing-filter-grid">
           <el-form-item label="门诊">
-            <el-select v-model="filters.clinicId" clearable style="width: 160px;">
+            <el-select v-model="filters.clinicId" clearable placeholder="全部门诊">
               <el-option v-for="item in clinics" :key="item.id" :label="item.clinicName" :value="item.id" />
             </el-select>
           </el-form-item>
           <el-form-item label="状态">
-            <el-select v-model="filters.orderStatus" clearable style="width: 160px;">
+            <el-select v-model="filters.orderStatus" clearable placeholder="全部状态">
               <el-option label="草稿" value="DRAFT" />
               <el-option label="部分支付" value="PART_PAID" />
               <el-option label="已结清" value="PAID" />
@@ -23,10 +50,10 @@
           <el-form-item label="收费日期">
             <el-date-picker v-model="chargeDateRange" type="daterange" value-format="YYYY-MM-DD" start-placeholder="开始日期" end-placeholder="结束日期" />
           </el-form-item>
-          <el-form-item label="关键词">
+          <el-form-item label="关键词" class="billing-filter-keyword">
             <el-input v-model.trim="filters.keyword" placeholder="收费单号/患者/手机号" clearable />
           </el-form-item>
-          <el-form-item>
+          <el-form-item class="billing-filter-actions">
             <el-button type="primary" @click="loadData">查询</el-button>
             <el-button @click="resetFilters">重置</el-button>
           </el-form-item>
@@ -37,8 +64,8 @@
     <div class="page-card tab-shell">
       <div class="el-card__body">
         <el-tabs>
-          <el-tab-pane label="收费单">
-            <el-table :data="chargeOrders" v-loading="loading" size="large">
+          <el-tab-pane :label="`收费单 ${pagination.total}`">
+            <el-table :data="chargeOrders" v-loading="loading" size="large" stripe empty-text="暂无收费单数据">
               <el-table-column prop="chargeNo" label="收费单号" min-width="130" />
               <el-table-column prop="patientName" label="患者" min-width="120" />
               <el-table-column prop="clinicName" label="门诊" min-width="120" />
@@ -72,8 +99,8 @@
             </div>
           </el-tab-pane>
 
-          <el-tab-pane label="收银交班">
-            <el-table :data="shifts" v-loading="loading" size="large">
+          <el-tab-pane :label="`收银交班 ${shifts.length}`">
+            <el-table :data="shifts" v-loading="loading" size="large" stripe empty-text="暂无交班记录">
               <el-table-column prop="shiftNo" label="班次号" min-width="130" />
               <el-table-column prop="cashierName" label="收银员" min-width="120" />
               <el-table-column prop="shiftDate" label="日期" min-width="120" />
@@ -273,7 +300,6 @@ import dayjs from 'dayjs'
 import { ElMessage } from 'element-plus'
 import { api } from '@/api/service'
 import EntityRemoteSelect from '@/components/EntityRemoteSelect.vue'
-import PageHeader from '@/components/PageHeader.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { usePermission } from '@/composables/usePermission'
 import { useRouteQueryState } from '@/composables/useRouteQueryState'
@@ -357,6 +383,14 @@ const shiftForm = reactive<Record<string, any>>({
 
 const paymentMaxAmount = computed(() => Number(detail.value?.arrearsAmount || 0))
 const refundMaxAmount = computed(() => Number(detail.value?.paidAmount || 0))
+const pageReceivableAmount = computed(() => chargeOrders.value.reduce((total, item) => total + Number(item.receivableAmount || 0), 0))
+const pagePaidAmount = computed(() => chargeOrders.value.reduce((total, item) => total + Number(item.paidAmount || 0), 0))
+const pageArrearsAmount = computed(() => chargeOrders.value.reduce((total, item) => total + Number(item.arrearsAmount || 0), 0))
+const openShiftCount = computed(() => shifts.value.filter((item) => item.shiftStatus === 'OPEN').length)
+
+function formatCurrency(value: number | string) {
+  return `¥${Number(value || 0).toFixed(2)}`
+}
 
 async function loadData() {
   loading.value = true
@@ -572,3 +606,153 @@ async function fetchDoctors(keyword: string) {
 
 onMounted(loadData)
 </script>
+
+<style scoped>
+.billing-page {
+  gap: 14px;
+}
+
+.billing-toolbar-card {
+  border: 1px solid rgba(8, 145, 178, 0.1);
+}
+
+.billing-toolbar-card .el-card__body {
+  padding: 18px 20px 16px;
+}
+
+.billing-toolbar-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.billing-toolbar-copy {
+  min-width: 0;
+}
+
+.billing-title {
+  margin: 0;
+  color: #0f3f52;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.billing-desc {
+  max-width: 520px;
+  margin: 6px 0 0;
+  color: #5b7086;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.billing-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.billing-stat-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.billing-stat-chip {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 12px;
+  background: #f8fbfc;
+}
+
+.billing-stat-chip-primary {
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.12) 0%, rgba(34, 211, 238, 0.06) 100%);
+  border-color: rgba(8, 145, 178, 0.18);
+}
+
+.billing-stat-label {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.billing-stat-value {
+  color: #0f3f52;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.billing-filter-grid {
+  display: grid;
+  grid-template-columns: 180px 180px minmax(280px, 360px) minmax(220px, 1fr) auto;
+  gap: 12px 16px;
+  align-items: end;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+:deep(.billing-filter-grid .el-form-item) {
+  margin: 0;
+}
+
+:deep(.billing-filter-grid .el-form-item__label) {
+  padding: 0 0 6px;
+  color: #60758a;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.billing-filter-keyword {
+  min-width: 0;
+}
+
+.billing-filter-actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+:deep(.billing-filter-grid .el-input__wrapper),
+:deep(.billing-filter-grid .el-select__wrapper),
+:deep(.billing-filter-grid .el-textarea__inner),
+:deep(.billing-filter-grid .el-range-editor.el-input__wrapper) {
+  min-height: 44px;
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+:deep(.billing-page .el-tabs__header) {
+  margin-bottom: 12px;
+}
+
+:deep(.billing-page .el-table) {
+  --el-table-header-bg-color: #f4fafb;
+  --el-table-row-hover-bg-color: rgba(8, 145, 178, 0.05);
+}
+
+@media (max-width: 1440px) {
+  .billing-toolbar-head {
+    flex-direction: column;
+  }
+
+  .billing-stat-list {
+    width: 100%;
+  }
+
+  .billing-filter-grid {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+
+  .billing-filter-actions {
+    justify-self: start;
+  }
+}
+</style>

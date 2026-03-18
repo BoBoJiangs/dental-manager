@@ -1,5 +1,5 @@
 <template>
-  <div class="showcase-page" style="padding: 24px;">
+  <div class="showcase-page">
     <div class="pc-shell">
       <aside class="sidebar">
         <div class="brand">
@@ -17,7 +17,7 @@
             :class="{ active: route.path === item.path || route.path.startsWith(`${item.path}/`) }"
             :to="item.path"
           >
-            <el-icon style="margin-right: 10px; vertical-align: middle;">
+            <el-icon class="menu-icon" :size="20" style="margin-right: 12px;">
               <component :is="item.icon" />
             </el-icon>
             <span>{{ item.title }}</span>
@@ -32,11 +32,13 @@
             <div class="topbar-title">{{ currentTitle }}</div>
           </div>
           <div class="topbar-actions">
-            <el-tag type="info">{{ authStore.user?.roles?.join(' / ') || '未加载角色' }}</el-tag>
-            <el-button @click="handleLogout">退出登录</el-button>
+            <el-tag type="info" effect="plain" round>{{ authStore.user?.roles?.join(' / ') || '未加载角色' }}</el-tag>
+            <el-button type="danger" plain round size="small" @click="handleLogout">退出登录</el-button>
           </div>
         </header>
-        <RouterView />
+        <div class="main-content">
+          <RouterView />
+        </div>
       </div>
     </div>
   </div>

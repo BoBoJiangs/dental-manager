@@ -72,14 +72,12 @@
         <template v-else>
           <el-calendar v-model="calendarDate">
             <template #date-cell="{ data }">
-              <div style="display: grid; gap: 6px; min-height: 96px;">
-                <div style="font-weight: 700;">{{ data.day.split('-').slice(2).join('') }}</div>
-                <div v-for="item in calendarMap[data.day]?.slice(0, 3) || []" :key="item.id" style="display: grid; gap: 4px;">
-                  <div class="soft-tag info" style="justify-content: flex-start; font-size: 11px;">
-                    {{ item.startTime?.slice(11, 16) || '--:--' }} {{ item.patientName }}
-                  </div>
+              <div class="calendar-cell-content">
+                <div class="calendar-date">{{ data.day.split('-').slice(2).join('') }}</div>
+                <div v-for="item in calendarMap[data.day]?.slice(0, 3) || []" :key="item.id" class="appointment-item">
+                  {{ item.startTime?.slice(11, 16) || '--:--' }} {{ item.patientName }}
                 </div>
-                <el-link v-if="(calendarMap[data.day]?.length || 0) > 3" type="primary" :underline="false" @click="openDayList(data.day)">
+                <el-link v-if="(calendarMap[data.day]?.length || 0) > 3" type="primary" :underline="false" @click.stop="openDayList(data.day)" style="font-size: 12px; margin-top: auto;">
                   +{{ (calendarMap[data.day]?.length || 0) - 3 }} 条
                 </el-link>
               </div>
@@ -524,3 +522,37 @@ onMounted(async () => {
   await loadMonthlyAppointments()
 })
 </script>
+
+<style scoped>
+:deep(.el-calendar-table .el-calendar-day) {
+  height: auto;
+  min-height: 120px;
+  padding: 8px;
+}
+
+.calendar-cell-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+}
+
+.calendar-date {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.appointment-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>

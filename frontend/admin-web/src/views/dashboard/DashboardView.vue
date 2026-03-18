@@ -1,10 +1,34 @@
 <template>
   <section class="page-shell">
     <div class="summary-grid">
-      <StatCard label="今日预约" :value="workbench.todayAppointmentCount ?? 0" meta="系统工作台统计" />
-      <StatCard label="已到诊" :value="workbench.todayArrivedCount ?? 0" meta="实时到诊状态" />
-      <StatCard label="待接诊" :value="workbench.waitingPatientCount ?? 0" meta="候诊队列" />
-      <StatCard label="今日实收" :value="`¥${clinicOverview.paidAmount ?? 0}`" meta="门诊经营概览" />
+      <StatCard 
+        label="今日预约" 
+        :value="workbench.todayAppointmentCount ?? 0" 
+        meta="系统工作台统计" 
+        :icon="Calendar" 
+        icon-class="primary"
+      />
+      <StatCard 
+        label="已到诊" 
+        :value="workbench.todayArrivedCount ?? 0" 
+        meta="实时到诊状态" 
+        :icon="Check" 
+        icon-class="success"
+      />
+      <StatCard 
+        label="待接诊" 
+        :value="workbench.waitingPatientCount ?? 0" 
+        meta="候诊队列" 
+        :icon="Timer" 
+        icon-class="warning"
+      />
+      <StatCard 
+        label="今日实收" 
+        :value="`¥${clinicOverview.paidAmount ?? 0}`" 
+        meta="门诊经营概览" 
+        :icon="Wallet" 
+        icon-class="danger"
+      />
     </div>
 
     <div class="split-grid">
@@ -92,6 +116,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import dayjs from 'dayjs'
+import { Calendar, Check, Timer, Wallet } from '@element-plus/icons-vue'
 import { api } from '@/api/service'
 import StatCard from '@/components/StatCard.vue'
 import StatusTag from '@/components/StatusTag.vue'

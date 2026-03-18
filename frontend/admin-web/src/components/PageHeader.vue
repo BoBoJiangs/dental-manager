@@ -1,9 +1,10 @@
 <template>
-  <div class="page-intro" :aria-label="title">
-    <div class="page-intro-text">
-      <p v-if="description" class="page-intro-desc">{{ description }}</p>
+  <div class="page-header" :aria-label="title">
+    <div>
+      <h3 class="page-title">{{ title }}</h3>
+      <p v-if="description" class="page-desc">{{ description }}</p>
     </div>
-    <div class="toolbar">
+    <div style="display: flex; gap: 12px; align-items: center;">
       <slot />
     </div>
   </div>

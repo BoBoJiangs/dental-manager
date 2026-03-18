@@ -14,11 +14,17 @@
       <div class="el-card__body">
         <el-tabs>
           <el-tab-pane label="附件列表">
-            <div class="toolbar" style="margin-bottom: 16px;">
-              <EntityRemoteSelect v-model="attachmentFilters.patientId" :request="fetchPatients" label-key="label" value-key="id" :selected-label="selectedLabels.patient" placeholder="搜索患者" />
-              <EntityRemoteSelect v-model="attachmentFilters.medicalRecordId" :request="fetchRecords" label-key="label" value-key="id" :selected-label="selectedLabels.record" placeholder="搜索病历" />
-              <el-button type="primary" @click="loadAttachments">查询</el-button>
-            </div>
+            <el-form :inline="true" :model="attachmentFilters" class="toolbar" style="margin-bottom: 16px;">
+              <el-form-item label="搜索患者">
+                <EntityRemoteSelect v-model="attachmentFilters.patientId" :request="fetchPatients" label-key="label" value-key="id" :selected-label="selectedLabels.patient" placeholder="请输入患者姓名/手机号" style="width: 200px;" />
+              </el-form-item>
+              <el-form-item label="搜索病历">
+                <EntityRemoteSelect v-model="attachmentFilters.medicalRecordId" :request="fetchRecords" label-key="label" value-key="id" :selected-label="selectedLabels.record" placeholder="请输入病历号" style="width: 200px;" />
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="loadAttachments">查询</el-button>
+              </el-form-item>
+            </el-form>
             <el-table :data="attachments" v-loading="loading" size="large">
               <el-table-column prop="fileName" label="文件名" min-width="180" />
               <el-table-column prop="bizType" label="业务类型" min-width="120" />

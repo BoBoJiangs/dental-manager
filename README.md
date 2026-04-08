@@ -116,6 +116,28 @@ mvn -o -q -DskipTests -Djava.version=17 compile
 mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=18084"
 ```
 
+### 5. 一键本地冒烟（Windows）
+
+在仓库根目录执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke-local.ps1
+```
+
+默认流程：
+
+1. `docker compose up -d` 启动依赖
+2. 后端编译（跳过测试）
+3. 启动后端（`8080`）
+4. 启动前端（`5173`）
+5. 运行 Playwright 冒烟测试
+
+可选参数：
+
+- `-SkipDocker`：跳过 Docker 依赖启动
+- `-SkipBackendCompile`：跳过后端编译
+- `-SkipFrontendInstall`：跳过前端 `npm ci` 检查
+
 ## 初始化账号
 
 - 用户名：`admin`
@@ -193,6 +215,11 @@ npm run build
 启动后访问：
 
 - `http://127.0.0.1:8080/swagger-ui.html`
+
+## CI 工作流
+
+- `ci`：后端编译+测试，前端构建
+- `e2e-smoke`：启动依赖与服务后执行 Playwright 冒烟（支持手动触发与定时触发）
 
 ## 进度文档
 

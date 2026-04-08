@@ -5,10 +5,10 @@ const password = process.env.E2E_PASSWORD || 'Admin@123456'
 
 async function login(page: import('@playwright/test').Page) {
   await page.goto('/login')
-  await page.getByLabel('用户名').fill(username)
-  await page.getByLabel('密码').fill(password)
-  await page.getByRole('button', { name: '登录' }).click()
-  await expect(page.getByRole('heading', { name: '工作台' })).toBeVisible()
+  await page.getByPlaceholder('请输入用户名').fill(username)
+  await page.getByPlaceholder('请输入密码').fill(password)
+  await page.getByRole('button', { name: /登录/ }).click()
+  await expect(page).toHaveURL(/\/dashboard$/)
 }
 
 test('login and show dashboard', async ({ page }) => {
@@ -43,7 +43,7 @@ test('core pages open without runtime errors', async ({ page }) => {
   await page.goto('/settings')
   await expect(page.getByRole('heading', { name: '基础设置' })).toBeVisible()
   await page.getByRole('tab', { name: '角色' }).click()
-  await expect(page.getByText('权限矩阵')).toBeVisible()
+  await expect(page.getByRole('heading', { name: '权限矩阵' })).toBeVisible()
   await page.getByRole('button', { name: '新增角色' }).click()
   await expect(page.getByRole('heading', { name: '新增角色' })).toBeVisible()
   await page.getByRole('button', { name: '取消' }).click()

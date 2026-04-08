@@ -21,6 +21,19 @@ npm run dev
 
 - `http://127.0.0.1:5173`
 
+## 冒烟测试
+
+```bash
+cd frontend/admin-web
+npm run test:e2e
+```
+
+说明：
+
+- 该命令要求前端服务已启动在 `5173`，并且后端接口可用（默认走 `/api` 代理）
+- 如果要一键拉起依赖 + 后端 + 前端 + E2E，可在仓库根目录执行：
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\smoke-local.ps1`
+
 ## 环境变量
 
 参考：

@@ -459,6 +459,27 @@ function openChargeDialog() {
 }
 
 async function createCharge() {
+  if (!chargeForm.clinicId) {
+    ElMessage.warning('请选择门诊')
+    return
+  }
+  if (!chargeForm.patientId) {
+    ElMessage.warning('请选择患者')
+    return
+  }
+  if (!chargeForm.itemCode || !chargeForm.itemName) {
+    ElMessage.warning('请填写项目编码和项目名称')
+    return
+  }
+  if (Number(chargeForm.unitPrice || 0) < 0 || Number(chargeForm.quantity || 0) < 1) {
+    ElMessage.warning('请填写正确的单价和数量')
+    return
+  }
+  if (Number(chargeForm.discountAmount || 0) < 0) {
+    ElMessage.warning('优惠金额不能小于 0')
+    return
+  }
+
   await api.billing.createCharge({
     clinicId: chargeForm.clinicId,
     patientId: chargeForm.patientId,
@@ -508,6 +529,18 @@ async function submitPayment() {
   if (!currentChargeId.value) {
     return
   }
+  if (!paymentForm.paymentMethod) {
+    ElMessage.warning('请选择支付方式')
+    return
+  }
+  if (Number(paymentForm.amount || 0) <= 0) {
+    ElMessage.warning('支付金额必须大于 0')
+    return
+  }
+  if (Number(paymentForm.amount || 0) > paymentMaxAmount.value) {
+    ElMessage.warning('支付金额不能大于欠费金额')
+    return
+  }
   await api.billing.pay(currentChargeId.value, paymentForm)
   ElMessage.success('支付登记成功')
   paymentDialogVisible.value = false
@@ -532,6 +565,22 @@ async function submitRefund() {
   if (!currentChargeId.value) {
     return
   }
+  if (!refundForm.refundMethod) {
+    ElMessage.warning('请选择退款方式')
+    return
+  }
+  if (!refundForm.refundReason) {
+    ElMessage.warning('请填写退款原因')
+    return
+  }
+  if (Number(refundForm.refundAmount || 0) <= 0) {
+    ElMessage.warning('退款金额必须大于 0')
+    return
+  }
+  if (Number(refundForm.refundAmount || 0) > refundMaxAmount.value) {
+    ElMessage.warning('退款金额不能大于已支付金额')
+    return
+  }
   await api.billing.refund(currentChargeId.value, refundForm)
   ElMessage.success('退款登记成功')
   refundDialogVisible.value = false
@@ -550,6 +599,10 @@ function openShiftDialog() {
 }
 
 async function openShift() {
+  if (!shiftForm.clinicId || !shiftForm.cashierId) {
+    ElMessage.warning('请完善门诊和收银员')
+    return
+  }
   await api.billing.openShift(shiftForm)
   ElMessage.success('开班成功')
   shiftDialogVisible.value = false

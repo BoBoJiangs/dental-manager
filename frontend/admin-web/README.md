@@ -45,6 +45,10 @@ npm run test:e2e
 - `VITE_API_BASE_URL`
 - `VITE_APP_TITLE`
 
+## 联调契约
+
+- 前后端联调基线文档：`docs/api-contract-baseline.md`
+
 ## 当前页面
 
 - 登录

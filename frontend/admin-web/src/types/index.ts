@@ -19,6 +19,11 @@ export interface ApiResponse<T> {
   timestamp: string
 }
 
+export interface PermissionSnapshot {
+  menuPermissions: string[]
+  buttonPermissions: string[]
+}
+
 export interface PageResult<T> {
   records: T[]
   total: number

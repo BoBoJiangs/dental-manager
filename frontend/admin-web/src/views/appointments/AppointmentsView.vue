@@ -431,6 +431,27 @@ function openCreateDialog(row?: any) {
 }
 
 async function submitAppointment() {
+  if (!appointmentForm.clinicId) {
+    ElMessage.warning('请选择门诊')
+    return
+  }
+  if (!appointmentForm.patientId) {
+    ElMessage.warning('请选择患者')
+    return
+  }
+  if (!appointmentForm.doctorId) {
+    ElMessage.warning('请选择医生')
+    return
+  }
+  if (!appointmentForm.appointmentDate || !appointmentForm.startTime || !appointmentForm.endTime) {
+    ElMessage.warning('请填写完整的预约时间')
+    return
+  }
+  if (dayjs(appointmentForm.endTime).isBefore(dayjs(appointmentForm.startTime))) {
+    ElMessage.warning('结束时间不能早于开始时间')
+    return
+  }
+
   saving.value = true
   try {
     if (currentAppointmentId.value) {
@@ -465,6 +486,14 @@ function openScheduleDialog() {
 }
 
 async function submitSchedule() {
+  if (!scheduleForm.clinicId || !scheduleForm.doctorId || !scheduleForm.scheduleDate) {
+    ElMessage.warning('请完善排班门诊、医生和日期')
+    return
+  }
+  if (!scheduleForm.startTime || !scheduleForm.endTime) {
+    ElMessage.warning('请填写排班开始和结束时间')
+    return
+  }
   await api.appointment.createSchedule(scheduleForm)
   ElMessage.success('排班创建成功')
   scheduleDialogVisible.value = false

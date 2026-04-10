@@ -251,6 +251,23 @@ async function openEditDialog(row: any) {
 }
 
 async function submitPatient() {
+  if (!patientForm.patientName) {
+    ElMessage.warning('请输入患者姓名')
+    return
+  }
+  if (!patientForm.mobile || !/^1\d{10}$/.test(patientForm.mobile)) {
+    ElMessage.warning('请输入正确的手机号')
+    return
+  }
+  if (!patientForm.sourceCode) {
+    ElMessage.warning('请选择患者来源')
+    return
+  }
+  if (!patientForm.firstClinicId) {
+    ElMessage.warning('请选择首诊门诊')
+    return
+  }
+
   saving.value = true
   try {
     const payload = { ...patientForm }

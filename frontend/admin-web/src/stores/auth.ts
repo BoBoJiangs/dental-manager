@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { api } from '@/api/service'
-import type { LoginResponse } from '@/types'
+import type { LoginResponse, PermissionSnapshot } from '@/types'
 
 const TOKEN_KEY = 'dental_admin_token'
 const USER_KEY = 'dental_admin_user'
@@ -9,7 +9,7 @@ const USER_KEY = 'dental_admin_user'
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string>(localStorage.getItem(TOKEN_KEY) || '')
   const user = ref<LoginResponse | null>(JSON.parse(localStorage.getItem(USER_KEY) || 'null'))
-  const permissions = ref<Record<string, any> | null>(null)
+  const permissions = ref<PermissionSnapshot | null>(null)
 
   const isAuthenticated = computed(() => Boolean(token.value))
 

@@ -1,27 +1,48 @@
 import http from './http'
-import type { ApiResponse, LoginResponse, PageResult } from '@/types'
+import { ElMessage } from 'element-plus'
+import type { ApiResponse, LoginResponse, PageResult, PermissionSnapshot } from '@/types'
+
+const SUCCESS_CODE = 0
+
+export class ApiBusinessError extends Error {
+  code: number
+
+  constructor(code: number, message: string) {
+    super(message || '业务请求失败')
+    this.name = 'ApiBusinessError'
+    this.code = code
+  }
+}
+
+function assertBusinessSuccess<T>(payload: ApiResponse<T>) {
+  if (payload.code !== SUCCESS_CODE) {
+    ElMessage.error(payload.message || '业务请求失败')
+    throw new ApiBusinessError(payload.code, payload.message)
+  }
+  return payload
+}
 
 function get<T>(url: string, params?: Record<string, unknown>) {
-  return http.get<ApiResponse<T>>(url, { params }).then((response) => response.data)
+  return http.get<ApiResponse<T>>(url, { params }).then((response) => assertBusinessSuccess(response.data))
 }
 
 function post<T>(url: string, data?: unknown, config?: Record<string, unknown>) {
-  return http.post<ApiResponse<T>>(url, data, config).then((response) => response.data)
+  return http.post<ApiResponse<T>>(url, data, config).then((response) => assertBusinessSuccess(response.data))
 }
 
 function put<T>(url: string, data?: unknown) {
-  return http.put<ApiResponse<T>>(url, data).then((response) => response.data)
+  return http.put<ApiResponse<T>>(url, data).then((response) => assertBusinessSuccess(response.data))
 }
 
 function del<T>(url: string) {
-  return http.delete<ApiResponse<T>>(url).then((response) => response.data)
+  return http.delete<ApiResponse<T>>(url).then((response) => assertBusinessSuccess(response.data))
 }
 
 export const api = {
   auth: {
     login: (payload: { username: string; password: string }) => post<LoginResponse>('/api/auth/login', payload),
     me: () => get<LoginResponse>('/api/auth/me'),
-    permissions: () => get<Record<string, any>>('/api/auth/permissions'),
+    permissions: () => get<PermissionSnapshot>('/api/auth/permissions'),
     logout: () => post<string>('/api/auth/logout'),
   },
   system: {

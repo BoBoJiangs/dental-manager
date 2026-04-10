@@ -221,6 +221,11 @@ npm run build
 - `ci`：后端编译+测试，前端构建
 - `e2e-smoke`：启动依赖与服务后执行 Playwright 冒烟（支持手动触发与定时触发）
 
+后端覆盖率报告（JaCoCo）：
+
+- CI 中后端测试使用 `-Pcoverage` profile，会产出覆盖率报告并上传构建产物
+- 本地如需生成覆盖率报告，可执行：`mvn -Pcoverage test`
+
 ## 进度文档
 
 当前开发进度与续开发建议见：
